@@ -1,115 +1,384 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import {EditIcon} from "./EditIcon";
 import {DeleteIcon} from "./DeleteIcon";
+import '../facultades/styles.css';
 
 export default function facultadesPage() {
-	return (
-        <><div className="text-center font-bold my-4 mb-8">
-    <h1>Gestión Facultades</h1>
-  </div>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [facultades, setFacultades] = useState([]);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [showFormulario, setShowFormulario] = useState(false);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [formData, setFormData] = useState({
+      id: '0',
+      nombre: '',
+      logo: '',
+      sigla: '',
+    });
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [selectedFacultad, setSelectedFacultad] = useState(null);
   
-    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                  <tr>
-                      <th scope="col" className="p-4">
-                          
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Product name
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Color
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Category
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Accessories
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Available
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Price
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Weight
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Action
-                      </th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td className="w-4 p-4">
-                          
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          Apple MacBook Pro 17
-                      </td>
-                      <td className="px-6 py-4">
-                          Silver
-                      </td>
-                      <td className="px-6 py-4">
-                          Laptop
-                      </td>
-                      <td className="px-6 py-4">
-                          Yes
-                      </td>
-                      <td className="px-6 py-4">
-                          Yes
-                      </td>
-                      <td className="px-6 py-4">
-                          $2999
-                      </td>
-                      <td className="px-6 py-4">
-                          3.0 lb.
-                      </td>
-                      <td className="flex items-center px-6 py-4">
-                          <a
-                              href="#"
-                              className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                          >
-                              <EditIcon />
-                          </a>
-                          <a
-                              href="#"
-                              className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                          >
-                              <DeleteIcon />
-                          </a>
-                      </td>
-                  </tr>
-              </tbody>
-          </table>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(() => {
+      fetch('http://3.21.41.85/api/v1/facultad')
+        .then((response) => response.json())
+        .then((data) => setFacultades(data))
+        .catch((error) => console.error('Error fetching data:', error));
+    }, []);
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const itemsPerPage = 8;
+
+    const totalPages = Math.ceil(facultades.length / itemsPerPage);
+
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = facultades.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+      };
+      
+
+
+
+  
+    const handleDelete = (id) => {
+      fetch(`http://3.21.41.85/api/v1/facultad/${id}`, {
+        method: 'DELETE',
+      })
+        .then((response) => {
+          if (response.ok) {
+            setFacultades((prevFacultades) =>
+              prevFacultades.filter((facultad) => facultad.id !== id)
+            );
+          } else {
+            throw new Error('Failed to delete');
+          }
+        })
+        .catch((error) => console.error('Error deleting:', error));
+    };
+  
+    const handleFormularioToggle = () => {
+        setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
+        setSelectedFacultad(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
+      };
+      
+  
+      const handleInsert = (e) => {
+        e.preventDefault();
+      
+        fetch('http://3.21.41.85/api/v1/facultad', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            setFacultades((prevFacultades) => [...prevFacultades, data.result]); // Actualiza el estado con los datos recibidos del servidor
+            setFormData({ nombre: '', logo: '', sigla: '' });
+            setShowFormulario(false);
+          })
+          .catch((error) => console.error('Error inserting data:', error));
+      };
+  
+    const handleInputChange = (e) => {
+      const { id, value } = e.target;
+  
+      if (selectedFacultad) {
+        setSelectedFacultad((prevSelectedFacultad) => ({
+          ...prevSelectedFacultad,
+          [id]: value,
+        }));
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [id]: value,
+        }));
+      }
+    };
+  
+    const handleEdit = (facultad) => {
+      setSelectedFacultad(facultad);
+      setShowFormulario(true);
+    };
+  
+    const handleUpdate = (e, id) => {
+        e.preventDefault();
+      
+        fetch(`http://3.21.41.85/api/v1/facultad/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(selectedFacultad),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === 'success' && data.result) {
+              setFacultades((prevFacultades) =>
+                prevFacultades.map((facultad) =>
+                  facultad.id === id ? { ...facultad, ...data.result } : facultad
+                )
+              );
+            } else {
+              console.error('Error en la edición:', data.message);
+            }
+          })
+          .catch((error) => console.error('Error updating data:', error))
+          .finally(() => {
+            setShowFormulario(false); // Cierra el formulario después de la edición
+          });
+      };
+  // ... (resto del código)
+  
+      
+      
+      
+      
+      
+    
+      
+	return (
+        <>
+  
+<div className="text-center font-bold my-4 mb-8">
+        <h1>Gestión Facultades</h1>
       </div>
-      <nav aria-label="Page navigation example">
-  <ul className="inline-flex -space-x-px text-sm">
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</a>
-    </li>
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</a>
-    </li>
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">2</a>
-    </li>
-    <li>
-      <a href="#" aria-current="page" className="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">3</a>
-    </li>
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">4</a>
-    </li>
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">5</a>
-    </li>
-    <li>
-      <a href="#" className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
-    </li>
-  </ul>
-</nav>
+      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          {/* Resto del contenido de la tabla */}
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th key="columna-nombre" scope="col" className="px-6 py-3">
+                Nombre
+                </th>
+                <th key="columna-logo" scope="col" className="px-6 py-3">
+                Logo
+                </th>
+                <th key="columna-sigla" scope="col" className="px-6 py-3">
+                Sigla
+                </th>
+                <th key="columna-acciones" scope="col" className="px-6 py-3">
+                Acciones
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+          {currentItems.map((facultad) => (
+            <tr key={facultad.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                {facultad.nombre}
+              </td>
+              <td className="px-6 py-4">
+                {facultad.logo}
+              </td>
+              <td className="px-6 py-4">
+                {facultad.sigla}
+              </td>
+              <td className="flex items-center px-6 py-4">
+                <a
+                  href="#"
+                  className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  onClick={() => handleEdit(facultad)}
+                >
+                  <EditIcon />
+                </a>
+                <a
+                  className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                  onClick={() => handleDelete(facultad.id)}
+                >
+                  <DeleteIcon />
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        </table>
+      </div>
+      <nav aria-label="Page navigation example" className="mt-4">
+        <ul className="inline-flex -space-x-px text-sm">
+            {[...Array(totalPages)].map((_, index) => (
+            <li key={index}>
+                <a
+                href="#"
+                className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${currentPage === index + 1 ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' : ''}`}
+                onClick={() => handlePageChange(index + 1)}
+                style={{ marginTop: '8px' }}
+                >
+                {index + 1}
+                </a>
+            </li>
+            ))}
+        </ul>
+        </nav>
+
+
+
+
+<div className="fixed bottom-8 right-8 z-10">
+        <button
+          data-tooltip-target="tooltip-new"
+          type="button"
+          className="inline-flex items-center justify-center w-10 h-10 font-medium colorbg rounded-full hover:bg-red-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
+          onClick={handleFormularioToggle} // Manejador de clic para abrir/cerrar el formulario
+        >
+    <svg
+      className="w-4 h-4 text-white"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 18 18"
+    >
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 1v16M1 9h16"
+      />
+    </svg>
+    <span className="sr-only">New item</span>
+  </button>
+</div>
+{showFormulario && (
+  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    
+      <div className="flex justify-center items-center h-screen">
+        <form
+          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+          onSubmit={handleInsert} // Agrega esta función al evento onSubmit del formulario
+        >
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
+              Nombre
+            </label>
+            <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="nombre"
+                  type="text"
+                  placeholder="Ingrese el nombre de la facultad"
+                  value={formData.nombre}
+                  onChange={handleInputChange}
+                />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="logo">
+              Logo
+            </label>
+            <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="logo"
+                type="text"
+                placeholder="Ingrese la URL del logo"
+                value={formData.logo}
+                onChange={handleInputChange}
+                />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sigla">
+              Sigla
+            </label>
+            <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                id="sigla"
+                type="text"
+                placeholder="Ingrese la sigla de la facultad"
+                value={formData.sigla}
+                onChange={handleInputChange}
+                />
+          </div>
+          <div className="flex items-center justify-between">
+          <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={handleFormularioToggle}
+            >
+                Cerrar
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="submit" // Cambiado a type="submit" para activar la función handleSubmit
+            >
+              Registrar Facultad
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+)}
+{showFormulario && selectedFacultad && (
+  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <form
+      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+      onSubmit={(e) => handleUpdate(e, selectedFacultad.id)}
+    >
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
+          Nombre
+        </label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="nombre"
+          type="text"
+          placeholder="Ingrese el nombre de la facultad"
+          value={selectedFacultad ? selectedFacultad.nombre : ''}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="logo">
+          Logo
+        </label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="logo"
+          type="text"
+          placeholder="Ingrese la URL del logo"
+          value={selectedFacultad ? selectedFacultad.logo : ''}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mb-6">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sigla">
+          Sigla
+        </label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+          id="sigla"
+          type="text"
+          placeholder="Ingrese la sigla de la facultad"
+          value={selectedFacultad ? selectedFacultad.sigla : ''}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+      <button
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleFormularioToggle}
+        >
+            Cerrar
+        </button>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          type="submit"
+        >
+          Actualizar Facultad
+        </button>
+      </div>
+    </form>
+  </div>
+)}
+
+
+
       </>
     )
 }
