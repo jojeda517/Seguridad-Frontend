@@ -27,7 +27,7 @@ export default function LoginPage() {
     console.log('correcto');
     console.log(result);
     
-    //router.push('/dashboard')
+    router.push('/dashboard')
   };
 
   const handleMicrosoftSignIn = async () => {
