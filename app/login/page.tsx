@@ -1,11 +1,39 @@
-import { title } from "@/components/primitives";
+"use client";
 import Image from "next/image";
 import '../login/styles.css';
 import React from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
+import 'firebase/auth';
+import signInWithMicrosoft from "../../firebase/Auth/singin";
+import { signIn } from "next-auth/react"; 
+
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  //const navigate = useNavigate();
+  const router = useRouter()
+
+  const handleForm = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    console.log('estoy logueando');
+    const { result, error } = await signInWithMicrosoft();
+    if (error) {
+      console.log('error');
+      return console.log(error);
+      
+    }
+    // else successful
+    console.log('correcto');
+    console.log(result);
+    
+    router.push('/dashboard')
+  };
+
+  const handleMicrosoftSignIn = async () => {
+    await signIn("microsoft");
+  };
+
 	return (
 		<div className="flex justify-center items-center h-screen" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="bg-white p-5 rounded-5 text-secondary shadow rounded-lg"  style={{ width: '25rem' }}>
@@ -48,7 +76,8 @@ export default function LoginPage() {
             <span className="bg-white px-3 customcolor">or</span>
           </div>
         </div>
-        <Button className="bg-custom text-white w-full py-2 font-semibold mt-4 shadow-sm" >
+        <Button className="bg-custom text-white w-full py-2 font-semibold mt-4 shadow-sm" 
+        onClick={handleForm}>
         <Image src="/Outlook.svg" alt="google-icon" width={26} height={26} />
         Continuar con Outlook
         </Button>
