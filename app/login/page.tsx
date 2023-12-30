@@ -16,10 +16,12 @@ export default function LoginPage() {
 
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [errorMensaje, setErrorMensaje] = useState('');
+
 
   const handleLogin = async (event) => {
     event.preventDefault();
-
+  
     try {
       const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
         method: 'POST',
@@ -31,18 +33,20 @@ export default function LoginPage() {
           contrasena,
         }),
       });
-
+  
       if (response.ok) {
         // Si la respuesta es exitosa, redirige a la página de dashboard
         router.push('/dashboard');
       } else {
         // Si hay un error en la respuesta, maneja el error (puedes mostrar un mensaje, por ejemplo)
+        setErrorMensaje('Credenciales incorrectas. Inténtalo de nuevo.');
         console.error('Error al iniciar sesión:', response.statusText);
       }
     } catch (error) {
       console.error('Error al conectarse con el servicio:', error);
     }
   };
+  
 
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -113,6 +117,10 @@ export default function LoginPage() {
         <Image src="/Outlook.svg" alt="google-icon" width={26} height={26} />
         Continuar con Outlook
         </Button>
+        {errorMensaje && (
+          <div className="text-red-500 text-sm text-center mt-2">{errorMensaje}</div>
+        )}
+
       </div>
     </div>
 	);
