@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import '../login/styles.css';
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import 'firebase/auth';
@@ -13,6 +13,36 @@ import { useRouter } from 'next/navigation'
 export default function LoginPage() {
   //const navigate = useNavigate();
   const router = useRouter()
+
+  const [correo, setCorreo] = useState('');
+  const [contrasena, setContrasena] = useState('');
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo,
+          contrasena,
+        }),
+      });
+
+      if (response.ok) {
+        // Si la respuesta es exitosa, redirige a la página de dashboard
+        router.push('/dashboard');
+      } else {
+        // Si hay un error en la respuesta, maneja el error (puedes mostrar un mensaje, por ejemplo)
+        console.error('Error al iniciar sesión:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al conectarse con el servicio:', error);
+    }
+  };
 
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -30,9 +60,6 @@ export default function LoginPage() {
     router.push('/dashboard')
   };
 
-  const handleMicrosoftSignIn = async () => {
-    await signIn("microsoft");
-  };
 
 	return (
 		<div className="flex justify-center items-center h-screen" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
@@ -46,7 +73,9 @@ export default function LoginPage() {
             <div className="p-2">
               <Image src="/username-icon.svg" alt="username-icon" width={16} height={16} />
             </div>
-            <Input type="email" label="Email" radius="none"/>
+            <Input type="email" label="Email" radius="none"
+            value={correo} // Asocia el valor del estado 'correo' al campo de entrada
+            onChange={(e) => setCorreo(e.target.value)}/>
           </div>
         </div>
         <div className="mt-1">
@@ -54,7 +83,9 @@ export default function LoginPage() {
             <div className="p-2">
               <Image src="/password-icon.svg" alt="password-icon" width={16} height={16} />
             </div>
-            <Input type="password" label="Contraseña" radius="none"/>
+            <Input type="password" label="Contraseña" radius="none" 
+            value={contrasena} // Asocia el valor del estado 'contrasena' al campo de entrada
+            onChange={(e) => setContrasena(e.target.value)}/>
           </div>
         </div>
         <div className="flex justify-around mt-1">
@@ -65,7 +96,8 @@ export default function LoginPage() {
             {/* Otro contenido */}
           </div>
         </div>
-        <Button className="bg-custom-bg-color text-white w-full py-2 font-semibold mt-4 shadow-sm">
+        <Button className="bg-custom-bg-color text-white w-full py-2 font-semibold mt-4 shadow-sm" 
+        onClick={handleLogin}>
           Login
         </Button>
         <div className="flex gap-1 justify-center mt-1">
