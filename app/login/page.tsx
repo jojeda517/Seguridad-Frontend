@@ -40,9 +40,13 @@ export default function LoginPage() {
 
         // Almacena el rol en la sesión
         const role = data.rol_id;
+        const nombre = data.nombre;
+        const apellido = data.apellido;
 
         // Guarda el rol en localStorage
         localStorage.setItem('userRole', role);
+        localStorage.setItem('firstName', nombre);
+        localStorage.setItem('lastName', apellido);
 
         router.push('/dashboard');
       } else {
