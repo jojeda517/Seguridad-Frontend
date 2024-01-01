@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {EditIcon} from "./EditIcon";
 import {DeleteIcon} from "./DeleteIcon";
 import '../styles.css';
+import { Toast } from '@/components/toast';
 
 export default function AdministradoresPage() {
     const [administradores, setAdministradores] = useState([]);
@@ -189,6 +190,7 @@ export default function AdministradoresPage() {
               setAdministradores((prevAdministradores) =>
               prevAdministradores.filter((administrador) => administrador.id !== id)
               );
+              //mostrarMensajeToast('Administrador Eliminado');
               mostrarMensajeToast('Administrador Eliminado');
             } else {
               throw new Error('Failed to delete');
@@ -465,6 +467,8 @@ export default function AdministradoresPage() {
   </button>
 </div>
 
+<Toast></Toast>
+
 {showFormulario && (
   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div className="flex justify-center items-center h-screen">
@@ -738,10 +742,6 @@ export default function AdministradoresPage() {
     </svg>
   </button>
 </div>
-
-
-
-
 )}
 
       
