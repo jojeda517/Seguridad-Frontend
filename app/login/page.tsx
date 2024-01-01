@@ -66,24 +66,39 @@ export default function LoginPage() {
       return console.log(error);
     }
 
-    console.log(result?.email);
-
     // else successful
     console.log('Successful!');
+    console.log(result?.email);
+
     const response = await fetch('http://3.21.41.85/api/v1/usuario/login/microsoft', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        correo : result?.email,
-        contrasena : "test",
+        correo: result?.email,
+        contrasena: "test",
       }),
     });
 
-    console.log(response.json());
-    
-    //router.push('/dashboard')
+    if (response.ok) {
+
+      // Lógica para obtener el rol del usuario desde el backend en Microsoft
+      const rol_id = await response.json();
+      console.log(rol_id);
+
+      // Almacena el rol en la sesión
+      const role = rol_id;
+
+      // Guarda el rol en localStorage
+      localStorage.setItem('userRole', role);
+
+      router.push('/dashboard');
+    } else {
+      // Si hay un error en la respuesta, maneja el error (puedes mostrar un mensaje, por ejemplo)
+      setErrorMensaje('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.error('Error al iniciar sesión:', response.statusText);
+    }
   };
 
 
