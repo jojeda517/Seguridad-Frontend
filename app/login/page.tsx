@@ -151,8 +151,8 @@ export default function LoginPage() {
         </div>
         <Button className="bg-custom text-white w-full py-2 font-semibold mt-4 shadow-sm"
           onClick={handleForm}>
-          <Image src="/Outlook.svg" alt="google-icon" width={26} height={26} />
-          Continuar con Outlook
+          <Image src="/Microsoft.svg" alt="google-icon" width={20} height={20} />
+          Continuar con Microsoft
         </Button>
         {errorMensaje && (
           <div className="text-red-500 text-sm text-center mt-2">{errorMensaje}</div>
