@@ -1,22 +1,19 @@
 "use client";
-import Image from "next/image";
+
+import 'firebase/auth';
 import '../login/styles.css';
+import Image from "next/image";
 import React, { useState } from "react";
 import { Input } from "@nextui-org/input";
+import { useRouter } from 'next/navigation'
 import { Button } from "@nextui-org/button";
-import 'firebase/auth';
 import signInWithMicrosoft from "../../firebase/Auth/singin";
 
-import { useRouter } from 'next/navigation'
-
 export default function LoginPage() {
-  //const navigate = useNavigate();
   const router = useRouter()
-
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [errorMensaje, setErrorMensaje] = useState('');
-
 
   const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -59,21 +56,34 @@ export default function LoginPage() {
     }
   };
 
-
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    console.log('estoy logueando');
+
     const { result, error } = await signInWithMicrosoft();
+
     if (error) {
       console.log('error');
       return console.log(error);
-
     }
-    // else successful
-    console.log('correcto');
-    console.log(result);
 
-    router.push('/dashboard')
+    console.log(result?.email);
+
+    // else successful
+    console.log('Successful!');
+    const response = await fetch('http://3.21.41.85/api/v1/usuario/login/microsoft', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        correo : result?.email,
+        contrasena : "test",
+      }),
+    });
+
+    console.log(response.json());
+    
+    //router.push('/dashboard')
   };
 
 
