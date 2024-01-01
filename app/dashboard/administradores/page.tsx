@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import {EditIcon} from "./EditIcon";
-import {DeleteIcon} from "./DeleteIcon";
+import { EditIcon } from "./EditIcon";
+import { DeleteIcon } from "./DeleteIcon";
 import '../styles.css';
 import { Toast } from '@/components/toast';
 
@@ -10,8 +10,6 @@ export default function AdministradoresPage() {
     const [showFormulario, setShowFormulario] = useState(false);
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
-    const [selectedFacultad, setSelectedFacultad] = useState('');
-
 
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -24,59 +22,59 @@ export default function AdministradoresPage() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = administradores.slice(indexOfFirstItem, indexOfLastItem);
 
-    const [selectedAdministrador, setSelectedAdministrador] = useState(null);
+  const [selectedAdministrador, setSelectedAdministrador] = useState(null);
 
-    const [formData, setFormData] = useState({
-        id: '0',
-        nombre: '',
-        apellido: '',
-        correo: '',
-        rol_id:'1',
-        contrasena: '',
-        facultad_id: '',
-        carrera_id: '',
+  const [formData, setFormData] = useState({
+    id: '0',
+    nombre: '',
+    apellido: '',
+    correo: '',
+    rol_id: '1',
+    contrasena: '',
+    facultad_id: '',
+    carrera_id: '',
+  });
+
+  const [filteredCarreras, setFilteredCarreras] = useState([]);
+  const fetchUserData = async () => {
+    try {
+      const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario');
+      if (!userDataResponse.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+      const userData = await userDataResponse.json();
+      setAdministradores(userData);
+
+      const uniqueRoleIds = [...new Set(userData.map((user) => user.rol_id))];
+      const roleDataFetches = uniqueRoleIds.map(async (roleId) => {
+        const roleResponse = await fetch(`http://3.21.41.85/api/v1/rol/${roleId}`);
+        if (!roleResponse.ok) {
+          throw new Error(`Failed to fetch role with ID ${roleId}`);
+        }
+        const roleData = await roleResponse.json();
+        return { roleId, roleName: roleData.nombre };
       });
 
-    const [filteredCarreras, setFilteredCarreras] = useState([]);
-    const fetchUserData = async () => {
-        try {
-          const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario');
-          if (!userDataResponse.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          const userData = await userDataResponse.json();
-          setAdministradores(userData);
-          
-          const uniqueRoleIds = [...new Set(userData.map((user) => user.rol_id))];
-          const roleDataFetches = uniqueRoleIds.map(async (roleId) => {
-            const roleResponse = await fetch(`http://3.21.41.85/api/v1/rol/${roleId}`);
-            if (!roleResponse.ok) {
-              throw new Error(`Failed to fetch role with ID ${roleId}`);
-            }
-            const roleData = await roleResponse.json();
-            return { roleId, roleName: roleData.nombre };
+      Promise.all(roleDataFetches)
+        .then((roles) => {
+          const updatedAdministradores = userData.map((user) => {
+            const role = roles.find((role) => role.roleId === user.rol_id);
+            return role
+              ? { ...user, nombre_rol: role.roleName }
+              : user;
           });
-          
-          Promise.all(roleDataFetches)
-            .then((roles) => {
-              const updatedAdministradores = userData.map((user) => {
-                const role = roles.find((role) => role.roleId === user.rol_id);
-                return role
-                  ? { ...user, nombre_rol: role.roleName }
-                  : user;
-              });
-              setAdministradores(updatedAdministradores);
-            })
-            .catch((error) => {
-              console.error('Error fetching role data:', error);
-            });
-            
-          fetchFacultades();
-          fetchCarreras();
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      };
+          setAdministradores(updatedAdministradores);
+        })
+        .catch((error) => {
+          console.error('Error fetching role data:', error);
+        });
+
+      fetchFacultades();
+      fetchCarreras();
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
 
       const fetchCarreras = async () => {
         try {
@@ -118,7 +116,6 @@ export default function AdministradoresPage() {
               }));
       
               // Carga las carreras para la primera facultad automáticamente
-              console.log(firstFacultadId);
               const carrerasForFirstFacultad = await fetchCarrerasForFacultad(firstFacultadId);
               console.log(carrerasForFirstFacultad);
               setFilteredCarreras(carrerasForFirstFacultad);
@@ -132,8 +129,7 @@ export default function AdministradoresPage() {
       };
       const fetchCarrerasForFacultad = async (facultadId) => {
         try {
-          const response = await fetch(`http://3.21.41.85/api/v1/carrera/facultad/${facultadId}`);
-          console.log(response);
+          const response = await fetch(`http://3.21.41.85/api/v1/carrera?facultad_id=${facultadId}`);
           if (response.ok) {
             const data = await response.json();
             return data;
@@ -172,14 +168,14 @@ export default function AdministradoresPage() {
     
     
 
-      const handleFormularioToggle = () => {
-        setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
-        setSelectedAdministrador(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
-      };
+  const handleFormularioToggle = () => {
+    setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
+    setSelectedAdministrador(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
+  };
 
-      const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-      };
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
       const handleDelete = (id) => {
         fetch(`http://3.21.41.85/api/v1/usuario/${id}`, {
@@ -190,14 +186,11 @@ export default function AdministradoresPage() {
               setAdministradores((prevAdministradores) =>
               prevAdministradores.filter((administrador) => administrador.id !== id)
               );
-              //mostrarMensajeToast('Administrador Eliminado');
-              mostrarMensajeToast('Administrador Eliminado');
             } else {
               throw new Error('Failed to delete');
             }
           })
           .catch((error) => console.error('Error deleting:', error));
-          mostrarMensajeToast('Error al Eliminar');
       };
     
 
@@ -216,7 +209,6 @@ export default function AdministradoresPage() {
       
           if (!response.ok) {
             throw new Error('Failed to register administrator');
-            
           }
       
           // El administrador se ha registrado exitosamente
@@ -240,10 +232,8 @@ export default function AdministradoresPage() {
       
           // Opción: puedes cerrar el formulario después del registro exitoso
           setShowFormulario(false);
-          mostrarMensajeToast('Registro exitoso');
         } catch (error) {
           console.error('Error al registrar administrador:', error);
-          mostrarMensajeToast('Error al registrar');
           // Manejar el error, mostrar un mensaje de error, etc.
         }
       };
@@ -269,10 +259,8 @@ export default function AdministradoresPage() {
       
       const handleFacultadChange = (event) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
-        setSelectedFacultad(selectedFacultadId); // Actualiza la facultad seleccionada
-      
         setFormData({ ...formData, facultad_id: selectedFacultadId });
-      
+    
         const filteredCarreras = carreras.filter(
           (carrera) =>
             parseInt(carrera.facultad_id, 10) === selectedFacultadId ||
@@ -280,12 +268,11 @@ export default function AdministradoresPage() {
         );
         setFilteredCarreras(filteredCarreras);
       };
-      
 
-      const handleEdit = (administrador) => {
-        setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
-        setShowFormulario(true); // Muestra el formulario para editar
-      };
+  const handleEdit = (administrador) => {
+    setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
+    setShowFormulario(true); // Muestra el formulario para editar
+  };
 
       const handleUpdate = async (e, adminId) => {
         e.preventDefault();
@@ -310,137 +297,108 @@ export default function AdministradoresPage() {
       
           // Cerrar el formulario después de la actualización exitosa
           setShowFormulario(false);
-          mostrarMensajeToast('Administrador Actualizado');
         } catch (error) {
           console.error('Error al actualizar administrador:', error);
-          mostrarMensajeToast('Error al actualizar');
           // Manejar el error, mostrar un mensaje de error, etc.
         }
       };
-
-      const handleFacultadUpdateChange = (event) => {
-        const selectedFacultadId = parseInt(event.target.value, 10);
-        setSelectedAdministrador((prevSelectedAdministrador) => ({
-          ...prevSelectedAdministrador,
-          facultad_id: selectedFacultadId,
-        }));
       
-        const filteredCarreras = carreras.filter(
-          (carrera) =>
-            parseInt(carrera.facultad_id, 10) === selectedFacultadId ||
-            carrera.facultad_id === selectedFacultadId.toString()
-        );
-        setFilteredCarreras(filteredCarreras);
-      };
-      
-      const [mostrarToast, setMostrarToast] = useState(false);
-      const [mensajeToast, setMensajeToast] = useState('');
-      
-      const mostrarMensajeToast = (mensaje) => {
-        setMensajeToast(mensaje);
-        setMostrarToast(true);
-    
-        // Ocultar el toast después de cierto tiempo (por ejemplo, 5 segundos)
-        setTimeout(() => {
-          setMostrarToast(false);
-        }, 5000);
-      };
       
       
 
   return (
     <><div className="text-center font-bold my-4 mb-8">
-    <h1>Gestión Administradores</h1>
-  </div>
-  
-    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                  <tr>
-                      <th scope="col" className="px-6 py-3">
-                          Nombre
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Apellido
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Correo
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Rol
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Facultad
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Carrera
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                          Acciones
-                      </th>
-                  </tr>
-              </thead>
-              <tbody>
-              {currentItems.map((administrador) => (
-                  <tr key={administrador.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                      {administrador.nombre}
-                      </td>
-                      <td className="px-6 py-4">
-                      {administrador.apellido}
-                      </td>
-                      <td className="px-6 py-4">
-                      {administrador.correo}
-                      </td>
-                      <td className="px-6 py-4">
-                      {administrador.nombre_rol || 'Cargando...'}
-                      </td>
-                      <td className="px-6 py-4">
-                      {facultades.find((facultad) => facultad.id === administrador.facultad_id)?.nombre}
-                      </td>
-                      <td className="px-6 py-4">
-                      {carreras.find((carrera) => carrera.id === administrador.carrera_id)?.nombre}
-                      </td>
-                      <td className="flex items-center px-6 py-4">
-                          <a
-                              href="#"
-                              className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                              onClick={() => handleEdit(administrador)}
-                          >
-                              <EditIcon />
-                          </a>
-                          <a
-                              href="#"
-                              className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                              onClick={() => handleDelete(administrador.id)}
-                          >
-                              <DeleteIcon />
-                          </a>
-                      </td>
-                  </tr>
+      <h1>Gestión Administradores</h1>
+    </div>
+
+      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">
+                Nombre
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Apellido
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Correo
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Rol
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Facultad
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Carrera
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.map((administrador) => (
+              <tr key={administrador.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  {administrador.nombre}
+                </td>
+                <td className="px-6 py-4">
+                  {administrador.apellido}
+                </td>
+                <td className="px-6 py-4">
+                  {administrador.correo}
+                </td>
+                <td className="px-6 py-4">
+                  {administrador.nombre_rol || 'Cargando...'}
+                </td>
+                <td className="px-6 py-4">
+                  {facultades.find((facultad) => facultad.id === administrador.facultad_id)?.nombre}
+                </td>
+                <td className="px-6 py-4">
+                  {carreras.find((carrera) => carrera.id === administrador.carrera_id)?.nombre}
+                </td>
+                <td className="flex items-center px-6 py-4">
+                  <a
+                    href="#"
+                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                    onClick={() => handleEdit(administrador)}
+                  >
+                    <EditIcon />
+                  </a>
+                  <a
+                    href="#"
+                    className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                    onClick={() => handleDelete(administrador.id)}
+                  >
+                    <DeleteIcon />
+                  </a>
+                </td>
+              </tr>
             ))}
-              </tbody>
-          </table>
+          </tbody>
+        </table>
       </div>
 
       
 
       <nav aria-label="Page navigation example" className="mt-4">
         <ul className="inline-flex -space-x-px text-sm">
-            {[...Array(totalPages)].map((_, index) => (
+          {[...Array(totalPages)].map((_, index) => (
             <li key={index}>
-                <a
+              <a
                 href="#"
                 className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${currentPage === index + 1 ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' : ''}`}
                 onClick={() => handlePageChange(index + 1)}
                 style={{ marginTop: '8px' }}
-                >
+              >
                 {index + 1}
-                </a>
+              </a>
             </li>
-            ))}
+          ))}
         </ul>
-        </nav>
+      </nav>
       <div className="fixed bottom-8 right-8 z-10">
         <button
           data-tooltip-target="tooltip-new"
@@ -467,8 +425,6 @@ export default function AdministradoresPage() {
   </button>
 </div>
 
-<Toast></Toast>
-
 {showFormulario && (
   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div className="flex justify-center items-center h-screen">
@@ -487,7 +443,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el nombre"
             value={formData.nombre}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -501,7 +456,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el apellido"
             value={formData.apellido}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -515,7 +469,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el correo"
             value={formData.correo}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -529,7 +482,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese la contraseña"
             value={formData.contrasena}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -605,7 +557,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el nombre"
             value={selectedAdministrador.nombre}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -619,7 +570,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el apellido"
             value={selectedAdministrador.apellido}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -633,7 +583,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el correo"
             value={selectedAdministrador.correo}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -647,7 +596,6 @@ export default function AdministradoresPage() {
             placeholder="Ingrese la contraseña"
             value={selectedAdministrador.contrasena}
             onChange={handleInputChange}
-            required
           />
         </div>
         <div className="mb-4">
@@ -658,12 +606,12 @@ export default function AdministradoresPage() {
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="facultad"
             value={selectedAdministrador.facultad_id}
-            onChange={handleFacultadUpdateChange}
+            onChange={handleFacultadChange}
           >
             {facultades.map((facultad) => (
               <option key={facultad.id} value={facultad.id}>
-              {facultad.nombre}
-            </option>
+                {facultad.nombre}
+              </option>
             ))}
           </select>
         </div>
@@ -744,8 +692,8 @@ export default function AdministradoresPage() {
 </div>
 )}
 
-      
-      
-      </>
+
+
+    </>
   );
 }

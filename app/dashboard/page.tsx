@@ -1,41 +1,25 @@
+// app/dashboard/page.tsx
+
 "use client";
-import React, { useState } from "react";
-//import { useClient } from "next/client";
-import Image from "next/image";
-import { Button } from "@nextui-org/button";
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarMenuToggle,
-  NavbarMenuItem,
-  NavbarMenu,
-  NavbarContent,
-  NavbarItem,
-} from "@nextui-org/navbar";
-import { Link } from "@nextui-org/link";
+import React, { useState, useEffect } from "react";
+import DashboardLayout from "./layout";
 import '../dashboard/styles.css';
 
-export default function dashboardPage() {
-  //useClient();
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+export default function DashboardPage() {
+  const [userRole, setUserRole] = useState(0);
 
-  const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out",
-  ];
+  useEffect(() => {
+    // Obtén el rol del localStorage u otro lugar
+    const storedUserRole = parseInt(localStorage.getItem('userRole') || '0', 10);
+    setUserRole(storedUserRole);
+  }, []);
+
 
   return (
-    <div >
-      <p>dashboard</p>
-    </div>
+    <DashboardLayout userRole={userRole}>
+      <div>
+        <p>dashboard</p>
+      </div>
+    </DashboardLayout>
   );
 }
