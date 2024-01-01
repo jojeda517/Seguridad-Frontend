@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 
 export default function dashboardLayout({
-	children,
+	children
 }: {
 	children: React.ReactNode;
 }) {
