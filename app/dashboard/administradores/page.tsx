@@ -9,6 +9,8 @@ export default function AdministradoresPage() {
     const [showFormulario, setShowFormulario] = useState(false);
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
+    const [selectedFacultad, setSelectedFacultad] = useState('');
+
 
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -115,6 +117,7 @@ export default function AdministradoresPage() {
               }));
       
               // Carga las carreras para la primera facultad automáticamente
+              console.log(firstFacultadId);
               const carrerasForFirstFacultad = await fetchCarrerasForFacultad(firstFacultadId);
               console.log(carrerasForFirstFacultad);
               setFilteredCarreras(carrerasForFirstFacultad);
@@ -128,7 +131,8 @@ export default function AdministradoresPage() {
       };
       const fetchCarrerasForFacultad = async (facultadId) => {
         try {
-          const response = await fetch(`http://3.21.41.85/api/v1/carrera?facultad_id=${facultadId}`);
+          const response = await fetch(`http://3.21.41.85/api/v1/carrera/facultad/${facultadId}`);
+          console.log(response);
           if (response.ok) {
             const data = await response.json();
             return data;
@@ -231,6 +235,7 @@ export default function AdministradoresPage() {
       
           // Opción: puedes cerrar el formulario después del registro exitoso
           setShowFormulario(false);
+          mostrarMensajeToast('Registro exitoso');
         } catch (error) {
           console.error('Error al registrar administrador:', error);
           // Manejar el error, mostrar un mensaje de error, etc.
@@ -258,8 +263,10 @@ export default function AdministradoresPage() {
       
       const handleFacultadChange = (event) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
+        setSelectedFacultad(selectedFacultadId); // Actualiza la facultad seleccionada
+      
         setFormData({ ...formData, facultad_id: selectedFacultadId });
-    
+      
         const filteredCarreras = carreras.filter(
           (carrera) =>
             parseInt(carrera.facultad_id, 10) === selectedFacultadId ||
@@ -267,6 +274,7 @@ export default function AdministradoresPage() {
         );
         setFilteredCarreras(filteredCarreras);
       };
+      
 
       const handleEdit = (administrador) => {
         setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
@@ -301,7 +309,34 @@ export default function AdministradoresPage() {
           // Manejar el error, mostrar un mensaje de error, etc.
         }
       };
+
+      const handleFacultadUpdateChange = (event) => {
+        const selectedFacultadId = parseInt(event.target.value, 10);
+        setSelectedAdministrador((prevSelectedAdministrador) => ({
+          ...prevSelectedAdministrador,
+          facultad_id: selectedFacultadId,
+        }));
       
+        const filteredCarreras = carreras.filter(
+          (carrera) =>
+            parseInt(carrera.facultad_id, 10) === selectedFacultadId ||
+            carrera.facultad_id === selectedFacultadId.toString()
+        );
+        setFilteredCarreras(filteredCarreras);
+      };
+      
+      const [mostrarToast, setMostrarToast] = useState(false);
+      const [mensajeToast, setMensajeToast] = useState('');
+      
+      const mostrarMensajeToast = (mensaje) => {
+        setMensajeToast(mensaje);
+        setMostrarToast(true);
+    
+        // Ocultar el toast después de cierto tiempo (por ejemplo, 5 segundos)
+        setTimeout(() => {
+          setMostrarToast(false);
+        }, 5000);
+      };
       
       
 
@@ -380,6 +415,8 @@ export default function AdministradoresPage() {
           </table>
       </div>
 
+      
+
       <nav aria-label="Page navigation example" className="mt-4">
         <ul className="inline-flex -space-x-px text-sm">
             {[...Array(totalPages)].map((_, index) => (
@@ -440,6 +477,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el nombre"
             value={formData.nombre}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -453,6 +491,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el apellido"
             value={formData.apellido}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -466,6 +505,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el correo"
             value={formData.correo}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -479,6 +519,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese la contraseña"
             value={formData.contrasena}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -554,6 +595,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el nombre"
             value={selectedAdministrador.nombre}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -567,6 +609,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el apellido"
             value={selectedAdministrador.apellido}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -580,6 +623,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese el correo"
             value={selectedAdministrador.correo}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -593,6 +637,7 @@ export default function AdministradoresPage() {
             placeholder="Ingrese la contraseña"
             value={selectedAdministrador.contrasena}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="mb-4">
@@ -603,12 +648,12 @@ export default function AdministradoresPage() {
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="facultad"
             value={selectedAdministrador.facultad_id}
-            onChange={handleFacultadChange}
+            onChange={handleFacultadUpdateChange}
           >
             {facultades.map((facultad) => (
               <option key={facultad.id} value={facultad.id}>
-                {facultad.nombre}
-              </option>
+              {facultad.nombre}
+            </option>
             ))}
           </select>
         </div>
@@ -648,6 +693,28 @@ export default function AdministradoresPage() {
   </div>
 )}
 
+{mostrarToast && (
+  
+
+<div id="toast-default" className="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
+    <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+        <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.147 15.085a7.159 7.159 0 0 1-6.189 3.307A6.713 6.713 0 0 1 3.1 15.444c-2.679-4.513.287-8.737.888-9.548A4.373 4.373 0 0 0 5 1.608c1.287.953 6.445 3.218 5.537 10.5 1.5-1.122 2.706-3.01 2.853-6.14 1.433 1.049 3.993 5.395 1.757 9.117Z"/>
+        </svg>
+        <span className="sr-only">Fire icon</span>
+    </div>
+    <div className="ms-3 text-sm font-normal">Set yourself free.</div>
+    <button type="button" className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" data-dismiss-target="#toast-default" aria-label="Close"
+    onClick={() => setMostrarToast(false)}>
+        <span className="sr-only">Close</span>
+        <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+        </svg>
+    </button>
+</div>
+
+
+)}
 
       
       
