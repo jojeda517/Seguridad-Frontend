@@ -6,9 +6,10 @@ import { DeleteIcon } from "../../administradores/DeleteIcon";
 import "../../facultades/styles.css";
 import { Toast } from "@/components/toast";
 
-export default function estudiantesPage() {
+
+export default function carpetasPage() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [estudiantes, setEstudiantes] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [showFormulario, setShowFormulario] = useState(false);
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -37,11 +38,11 @@ export default function estudiantesPage() {
         setUserCarrera(carrera_id);
 
         const estudiantesResponse = await fetch(
-          `http://3.21.41.85/api/v1/estudiantes/${carrera_id}`
+          `http://3.21.41.85/api/v1/categorias/${carrera_id}`
         );
         if (estudiantesResponse.ok) {
           const estudiantesData = await estudiantesResponse.json();
-          setEstudiantes(estudiantesData);
+          setCategorias(estudiantesData);
         } else {
           throw new Error("Error fetching estudiantes");
         }
@@ -76,122 +77,20 @@ export default function estudiantesPage() {
 
   const itemsPerPage = 8;
 
-  const totalPages = Math.ceil(estudiantes.length / itemsPerPage);
+  const totalPages = Math.ceil(categorias.length / itemsPerPage);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = estudiantes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = categorias.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (response.ok) {
-          setEstudiantes((prevEstudiantes) =>
-          prevEstudiantes.filter((estudiante) => estudiante.id !== id)
-          );
-          mostrarMensajeToast("Estudiante eliminada");
-        } else {
-          throw new Error("Failed to delete");
-        }
-      })
-      .catch((error) => console.error("Error deleting:", error));
-    mostrarMensajeToast("Error al eliminar");
-  };
-
-  const handleFormularioToggle = () => {
-    setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
-    setSelectedEstudiantes(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
-  };
-
-  const handleInsert = (e) => {
-    e.preventDefault();
-
-    fetch(`http://3.21.41.85/api/v1/estudiante/${userCarrera}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]); // Actualiza el estado con los datos recibidos del servidor
-        setFormData({ 
-          id: "0",
-          nombre: "",
-          apellido: "",
-          cedula: "",
-          correo: "",
-          direccion: "",
-          celular: "",});
-        setShowFormulario(false);
-        mostrarMensajeToast("Estudiante Registrada");
-      })
-      .catch((error) => console.error("Error inserting data:", error));
-      mostrarMensajeToast("Error al Registrar");
-  };
-
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-
-    if (selectedEstudiantes) {
-      setSelectedEstudiantes((prevSelectedEstudiantes) => ({
-        ...prevSelectedEstudiantes,
-        [id]: value,
-      }));
-    } else {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [id]: value,
-      }));
-    }
-  };
-
-  const handleEdit = (estudiante) => {
-    setSelectedEstudiantes(estudiante);
-    setShowFormulario(true);
-  };
-
   const handleCarpetas = (estudiante) => {
-    window.location.href = `/carpetasEstudiante`;
+    window.location.href = `/dashboard/estudiantes/carpetasEstudiantes/archivosEstudiante`;
   };
 
-  const handleUpdate = (e, id) => {
-    e.preventDefault();
-
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(selectedEstudiantes),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success" && data.result) {
-          setEstudiantes((prevEstudiantes) =>
-            prevEstudiantes.map((estudiante) =>
-            estudiante.id === id ? { ...estudiante, ...data.result } : estudiante
-            )
-          );
-          mostrarMensajeToast("Estudiante actualizado");
-        } else {
-          console.error("Error en la edición:", data.message);
-          mostrarMensajeToast("Error al editar");
-        }
-      })
-      .catch((error) => console.error("Error updating data:", error))
-      .finally(() => {
-        setShowFormulario(false); // Cierra el formulario después de la edición
-      });
-  };
-  // ... (resto del código)
 
   const [mostrarToast, setMostrarToast] = useState(false);
   const [mensajeToast, setMensajeToast] = useState("");
@@ -206,31 +105,8 @@ export default function estudiantesPage() {
     }, 5000);
   };
 
-  const handleTelefonoChange = (e) => {
-    const input = e.target.value;
-    const regex = /^[0-9]*$/;
-    
-    // Expresión regular para números
-  
-    if (regex.test(input) || input === '') {
-      setFormData({
-        ...formData,
-        celular: input,
-      });
-    }
-  };
 
-  const handleTelefonoChangeEditForm = (e) => {
-    const input = e.target.value;
-    const regex = /^[0-9]*$/;
-  
-    if (regex.test(input) || input === '') {
-      setSelectedEstudiantes((prevSelectedEstudiantes) => ({
-        ...prevSelectedEstudiantes,
-        celular: input,
-      }));
-    }
-  };
+
   
 
   return (
@@ -249,29 +125,25 @@ export default function estudiantesPage() {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((estudiantes) => (
+            {currentItems.map((categorias) => (
               <tr
-                key={estudiantes.id}
+                key={categorias.id}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                onClick={() => handleCarpetas(estudiantes)}
+                onClick={() => handleCarpetas(categorias)}
               >
-                <td className="px-6 py-4">{estudiantes.nombre}</td>
-
                 <td className="flex items-center px-6 py-4">
-                  <a
-                    href="#"
-                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    onClick={() => handleEdit(estudiantes)}
-                  >
-                    <EditIcon />
-                  </a>
-                  <a
-                    className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                    onClick={() => handleDelete(estudiantes.id)}
-                  >
-                    <DeleteIcon />
-                  </a>
-                </td>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6 mr-2" // Agregamos margen a la derecha para separar el ícono del texto
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                </svg>
+                {categorias.nombre}
+              </td>
               </tr>
             ))}
           </tbody>
@@ -298,255 +170,6 @@ export default function estudiantesPage() {
         </ul>
       </nav>
 
-      <div className="fixed bottom-8 right-8 z-10">
-        <button
-          data-tooltip-target="tooltip-new"
-          type="button"
-          className="inline-flex items-center justify-center w-10 h-10 font-medium colorbg rounded-full hover:bg-red-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
-          onClick={handleFormularioToggle} // Manejador de clic para abrir/cerrar el formulario
-        >
-          <svg
-            className="w-4 h-4 text-white"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 18 18"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 1v16M1 9h16"
-            />
-          </svg>
-          <span className="sr-only">New item</span>
-        </button>
-      </div>
-      {showFormulario && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="flex justify-center items-center h-screen">
-            <form
-              className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-              onSubmit={handleInsert} // Agrega esta función al evento onSubmit del formulario
-            >
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="cedula"
-                >
-                  Cédula
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="cedula"
-                  type="text"
-                  placeholder="Ingrese la cédula"
-                  value={formData.cedula}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="nombre"
-                >
-                  Nombre
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="nombre"
-                  type="text"
-                  placeholder="Ingrese el nombre"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="apellido"
-                >
-                  Apellido
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="apellido"
-                  type="text"
-                  placeholder="Ingrese el apellido"
-                  value={formData.apellido}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="correo"
-                >
-                  Correo
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="correo"
-                  type="text"
-                  placeholder="Ingrese el correo"
-                  value={formData.correo}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="direccion"
-                >
-                  Dirección
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="direccion"
-                  type="text"
-                  placeholder="Ingrese la dirección"
-                  value={formData.direccion}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="telefono"
-                >
-                  Teléfono
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="telefono"
-                  type="text"
-                  placeholder="Ingrese el teléfono"
-                  value={formData.celular}
-                  onChange={handleTelefonoChange}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handleFormularioToggle}
-                >
-                  Cerrar
-                </button>
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  type="submit" // Cambiado a type="submit" para activar la función handleSubmit
-                >
-                  Registrar Facultad
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-{showFormulario && selectedEstudiantes && (
-  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <form
-      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-      onSubmit={(e) => handleUpdate(e, selectedEstudiantes.id)}
-    >
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cedula">
-          Cédula
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="cedula"
-          type="text"
-          placeholder="Cédula"
-          value={selectedEstudiantes ? selectedEstudiantes.cedula : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
-          Nombre
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="nombre"
-          type="text"
-          placeholder="Nombre"
-          value={selectedEstudiantes ? selectedEstudiantes.nombre : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apellido">
-          Apellido
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="apellido"
-          type="text"
-          placeholder="Apellido"
-          value={selectedEstudiantes ? selectedEstudiantes.apellido : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="correo">
-          Correo
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="correo"
-          type="text"
-          placeholder="Correo"
-          value={selectedEstudiantes ? selectedEstudiantes.correo : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="direccion">
-          Dirección
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="direccion"
-          type="text"
-          placeholder="Dirección"
-          value={selectedEstudiantes ? selectedEstudiantes.direccion : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="telefono">
-          Teléfono
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="telefono"
-          type="text"
-          placeholder="Teléfono"
-          value={selectedEstudiantes ? selectedEstudiantes.celular : ""}
-          onChange={handleTelefonoChangeEditForm}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleFormularioToggle}
-        >
-          Cerrar
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          type="submit"
-        >
-          Actualizar
-        </button>
-      </div>
-    </form>
-  </div>
-)}
 
 
       {mostrarToast && (
