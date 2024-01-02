@@ -41,7 +41,7 @@ export default function SecretariasPage() {
     const fetchUserData = async () => {
         try {
             // Cambiar la URL a la ruta correcta (2)
-            const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario');
+            const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario/rol/2');
             if (!userDataResponse.ok) {
                 throw new Error('Failed to fetch user data');
             }

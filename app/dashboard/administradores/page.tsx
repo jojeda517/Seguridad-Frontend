@@ -37,10 +37,21 @@ export default function AdministradoresPage() {
     carrera_id: '',
   });
 
+  const [editFormData, seteditFormData] = useState({
+    id: '0',
+    nombre: '',
+    apellido: '',
+    correo: '',
+    rol_id: '1',
+    contrasena: '',
+    facultad_id: '',
+    carrera_id: '',
+  });
+
   const [filteredCarreras, setFilteredCarreras] = useState([]);
   const fetchUserData = async () => {
     try {
-      const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario');
+      const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario/rol/1');
       if (!userDataResponse.ok) {
         throw new Error('Failed to fetch user data');
       }
@@ -588,7 +599,7 @@ export default function AdministradoresPage() {
       )}
 
       {showFormulario && selectedAdministrador && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
           <div className="flex justify-center items-center h-screen">
             <form
               className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
@@ -599,7 +610,7 @@ export default function AdministradoresPage() {
                   Nombre
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   id="nombre"
                   type="text"
                   placeholder="Ingrese el nombre"
@@ -613,7 +624,7 @@ export default function AdministradoresPage() {
                   Apellido
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   id="apellido"
                   type="text"
                   placeholder="Ingrese el apellido"
@@ -627,7 +638,7 @@ export default function AdministradoresPage() {
                   Correo
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   id="correo"
                   type="email"
                   placeholder="Ingrese el correo"
@@ -637,25 +648,11 @@ export default function AdministradoresPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="contrasena">
-                  Contraseña
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="contrasena"
-                  type="password"
-                  placeholder="Ingrese la contraseña"
-                  value={selectedAdministrador.contrasena}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="facultad">
                   Facultad
                 </label>
                 <select
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   id="facultad"
                   value={selectedAdministrador.facultad_id}
                   onChange={handleFacultadUpdateChange}
@@ -672,7 +669,7 @@ export default function AdministradoresPage() {
                   Carrera
                 </label>
                 <select
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   id="carrera"
                   value={selectedAdministrador.carrera_id}
                   onChange={handleSelectChange}
