@@ -38,11 +38,13 @@ export default function LoginPage() {
         const role = data.rol_id;
         const nombre = data.nombre;
         const apellido = data.apellido;
+        const carrera_id = data.carrera_id ;
 
         // Guarda el rol en localStorage
         localStorage.setItem('userRole', role);
         localStorage.setItem('firstName', nombre);
         localStorage.setItem('lastName', apellido);
+        localStorage.setItem('carrera', carrera_id);
 
         router.push('/dashboard');
       } else {
