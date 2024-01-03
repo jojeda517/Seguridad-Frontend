@@ -156,9 +156,10 @@ export default function estudiantesPage() {
   const handleEdit = (estudiante) => {
     setSelectedEstudiantes(estudiante);
     setShowFormulario(true);
+
   };
 
-  const handleCarpetas = (estudiante) => {
+  const handleCarpetas = () => {
     window.location.href = `/dashboard/estudiantes/carpetasEstudiantes`;
   };
 
@@ -274,7 +275,7 @@ export default function estudiantesPage() {
               <tr
                 key={estudiantes.id}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                onClick={() => handleCarpetas(estudiantes)}
+                onClick={() => handleCarpetas()}
               >
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                   {estudiantes.cedula}
@@ -285,13 +286,16 @@ export default function estudiantesPage() {
                 <td className="px-6 py-4">{estudiantes.direccion}</td>
                 <td className="px-6 py-4">{estudiantes.celular}</td>
                 <td className="flex items-center px-6 py-4">
-                  <a
-                    href="#"
+                  <button
+                    
                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    onClick={() => handleEdit(estudiantes)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evitar la propagación del evento
+                      handleEdit(estudiantes);
+                    }}
                   >
                     <EditIcon />
-                  </a>
+                  </button>
                   <a
                     className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                     onClick={() => handleDelete(estudiantes.id)}
