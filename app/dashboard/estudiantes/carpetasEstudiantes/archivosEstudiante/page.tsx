@@ -23,7 +23,8 @@ export default function archivosPage() {
   const [userId, setuserId] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(new File([], 'default.txt'));
+
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [formData, setFormData] = useState({
@@ -97,6 +98,11 @@ export default function archivosPage() {
     setCurrentPage(pageNumber);
   };
 
+  const handleFileChange = (event) => {
+    console.log(event.target.files[0]);
+    setSelectedFile(event.target.files[0]);
+  };
+
   const handleDelete = (id) => {
     fetch(`http://3.21.41.85/api/v1/documento/${id}/`, {
       method: "DELETE",
@@ -122,14 +128,19 @@ export default function archivosPage() {
   const handleInsert = (e) => {
     e.preventDefault();
   
-    fetch(`http://3.21.41.85/api/v1/documento/${userId}/${categorias[0].id}/${studentId}`, {
+    fetch(`http://3.21.41.85/api/v1/documento/${userId}/${categorias[0]?.id}/${studentId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Failed to register student");
+      })
       .then((data) => {
         setDocumentos((prevDocumentos) => [...prevDocumentos, data.result]);
         setFormData({
@@ -147,33 +158,29 @@ export default function archivosPage() {
         const nuevoDocumentoId = data.result.id;
         console.log(nuevoDocumentoId);
   
-         // Reemplaza 'tuArchivo' con el archivo real que quieres subir
         const archivoFormData = new FormData();
         console.log(selectedFile);
-        archivoFormData.append("file", selectedFile );
-  
-        fetch(`http://3.21.41.85/api/v1/archivo/${nuevoDocumentoId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          body: archivoFormData,
-        })
-          .then((response) => {
-            if (response.ok) {
-              // Hacer algo si la carga del archivo fue exitosa
-            } else {
-              // Manejar errores en la carga del archivo
-            }
-          })
-          .catch((error) => console.error("Error subiendo el archivo:", error));
-          mostrarMensajeToast('Error al subir el archivo')
+        if (selectedFile) {
+          archivoFormData.append("file", selectedFile);
+          return fetch(`http://3.21.41.85/api/v1/archivo/${nuevoDocumentoId}`, {
+            method: "POST",
+            body: archivoFormData,
+          });
+        }
+        return Promise.resolve(); // No hay archivo para subir, resolvemos la promesa
+      })
+      .then((archivoResponse) => {
+        if (archivoResponse && !archivoResponse.ok) {
+          throw new Error("Failed to upload file");
+        }
+        // Si todo fue exitoso o si no había archivo para subir, no hacemos nada adicional
       })
       .catch((error) => {
         console.error("Error inserting data:", error);
         mostrarMensajeToast("Error al Registrar");
       });
   };
+  
 
 
   const handleDownload = (documentoId) => {
@@ -223,10 +230,7 @@ export default function archivosPage() {
     setShowFormulario(true);
   };
 
-  const handleFileChange = (event) => {
-    console.log(event.target.files[0]);
-    setSelectedFile(event.target.files[0]);
-  };
+  
 
 
 
@@ -279,9 +283,23 @@ export default function archivosPage() {
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                 
               >
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                  {documentos.nombre}
-                </td>
+                <td className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4" // Establecer el tamaño del icono aquí
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                  />
+                </svg>
+                {documentos.nombre}
+              </td>
                 <td className="px-6 py-4">{documentos.descripcion}</td>
                 <td className="px-6 py-4">{documentos.fecha}</td>
 
