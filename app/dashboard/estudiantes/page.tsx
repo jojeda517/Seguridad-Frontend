@@ -17,6 +17,13 @@ export default function estudiantesPage() {
   const [userCarrera, setUserCarrera] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [showFileUploadForm, setShowFileUploadForm] = useState(false);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [selectedFile, setSelectedFile] = useState(new File([], 'default.txt'));
+
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [formData, setFormData] = useState({
     id: "0",
     nombre: "",
@@ -34,7 +41,7 @@ export default function estudiantesPage() {
     const fetchEstudiantesAndCarreras = async () => {
       try {
         const carrera_id = localStorage.getItem("carrera");
-        
+        console.log(carrera_id);
         setUserCarrera(carrera_id);
 
         const estudiantesResponse = await fetch(
@@ -87,14 +94,22 @@ export default function estudiantesPage() {
     setCurrentPage(pageNumber);
   };
 
+  const handleFileUploadFormToggle = () => {
+    setShowFileUploadForm((prevState) => !prevState);
+  };
+  
+
   const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`, {
-      method: "DELETE",
-    })
+    fetch(
+      `http://3.21.41.85/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`,
+      {
+        method: "DELETE",
+      }
+    )
       .then((response) => {
         if (response.ok) {
           setEstudiantes((prevEstudiantes) =>
-          prevEstudiantes.filter((estudiante) => estudiante.id !== id)
+            prevEstudiantes.filter((estudiante) => estudiante.id !== id)
           );
           mostrarMensajeToast("Estudiante eliminada");
         } else {
@@ -123,19 +138,20 @@ export default function estudiantesPage() {
       .then((response) => response.json())
       .then((data) => {
         setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]); // Actualiza el estado con los datos recibidos del servidor
-        setFormData({ 
+        setFormData({
           id: "0",
           nombre: "",
           apellido: "",
           cedula: "",
           correo: "",
           direccion: "",
-          celular: "",});
+          celular: "",
+        });
         setShowFormulario(false);
         mostrarMensajeToast("Estudiante Registrada");
       })
       .catch((error) => console.error("Error inserting data:", error));
-      mostrarMensajeToast("Error al Registrar");
+    mostrarMensajeToast("Error al Registrar");
   };
 
   const handleInputChange = (e) => {
@@ -157,12 +173,11 @@ export default function estudiantesPage() {
   const handleEdit = (estudiante) => {
     setSelectedEstudiantes(estudiante);
     setShowFormulario(true);
-
   };
 
   const handleCarpetas = (id) => {
     window.location.href = `/dashboard/estudiantes/carpetasEstudiantes`;
-    localStorage.setItem('StudentId', id);
+    localStorage.setItem("StudentId", id);
   };
 
   const handleUpdate = (e, id) => {
@@ -180,7 +195,9 @@ export default function estudiantesPage() {
         if (data.status === "success" && data.result) {
           setEstudiantes((prevEstudiantes) =>
             prevEstudiantes.map((estudiante) =>
-            estudiante.id === id ? { ...estudiante, ...data.result } : estudiante
+              estudiante.id === id
+                ? { ...estudiante, ...data.result }
+                : estudiante
             )
           );
           mostrarMensajeToast("Estudiante actualizado");
@@ -212,10 +229,10 @@ export default function estudiantesPage() {
   const handleTelefonoChange = (e) => {
     const input = e.target.value;
     const regex = /^[0-9]*$/;
-    
+
     // Expresión regular para números
-  
-    if (regex.test(input) || input === '') {
+
+    if (regex.test(input) || input === "") {
       setFormData({
         ...formData,
         celular: input,
@@ -226,14 +243,50 @@ export default function estudiantesPage() {
   const handleTelefonoChangeEditForm = (e) => {
     const input = e.target.value;
     const regex = /^[0-9]*$/;
-  
-    if (regex.test(input) || input === '') {
+
+    if (regex.test(input) || input === "") {
       setSelectedEstudiantes((prevSelectedEstudiantes) => ({
         ...prevSelectedEstudiantes,
         celular: input,
       }));
     }
   };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]; // Obtiene el archivo seleccionado del evento
+  
+    // Aquí puedes realizar acciones con el archivo seleccionado, como establecerlo en el estado
+    // Por ejemplo, podrías guardar el archivo en el estado si usas un hook de estado:
+    setSelectedFile(file);
+  };
+
+  const handleFileSubmit = async () => {
+    if (!selectedFile) {
+      console.error("No se ha seleccionado ningún archivo.");
+      return;
+    }
+  
+    const archivoformData = new FormData();
+    archivoformData.append("file", selectedFile);
+  
+    try {
+      
+      const response = await fetch(`http://3.21.41.85/api/v1/cargar-estudiantes/${userCarrera}`, {
+        method: "POST",
+        body: archivoformData,
+      });
+  
+      if (response.ok) {
+        // Procesar la respuesta si es necesario
+        console.log("Archivo cargado exitosamente.");
+      } else {
+        throw new Error("Error al cargar el archivo.");
+      }
+    } catch (error) {
+      console.error("Error al realizar la carga del archivo:", error);
+    }
+  };
+  
   
 
   return (
@@ -289,7 +342,6 @@ export default function estudiantesPage() {
                 <td className="px-6 py-4">{estudiantes.celular}</td>
                 <td className="flex items-center px-6 py-4">
                   <button
-                    
                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                     onClick={(e) => {
                       e.stopPropagation(); // Evitar la propagación del evento
@@ -300,7 +352,10 @@ export default function estudiantesPage() {
                   </button>
                   <a
                     className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                    onClick={() => handleDelete(estudiantes.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evitar la propagación del evento
+                      handleDelete(estudiantes.id);
+                    }}
                   >
                     <DeleteIcon />
                   </a>
@@ -331,7 +386,33 @@ export default function estudiantesPage() {
         </ul>
       </nav>
 
-      <div className="fixed bottom-8 right-8 z-10">
+      <div className="fixed bottom-16 right-8 z-10">
+        <button
+          data-tooltip-target="tooltip-new"
+          type="button"
+          className="inline-flex items-center justify-center w-10 h-10 font-medium secondcolorbg rounded-full hover:bg-sky-800 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
+          onClick={handleFileUploadFormToggle} // Manejador de clic para abrir/cerrar el formulario
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            className="w-6 h-6 colortext"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
+            />
+          </svg>
+
+          <span className="sr-only">uploadEstudiantes</span>
+        </button>
+      </div>
+
+      <div className="fixed bottom-5 right-8 z-10">
         <button
           data-tooltip-target="tooltip-new"
           type="button"
@@ -356,6 +437,7 @@ export default function estudiantesPage() {
           <span className="sr-only">New item</span>
         </button>
       </div>
+
       {showFormulario && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="flex justify-center items-center h-screen">
@@ -377,6 +459,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese la cédula"
                   value={formData.cedula}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -393,6 +476,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese el nombre"
                   value={formData.nombre}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -409,6 +493,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese el apellido"
                   value={formData.apellido}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -425,6 +510,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese el correo"
                   value={formData.correo}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -441,6 +527,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese la dirección"
                   value={formData.direccion}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -457,6 +544,7 @@ export default function estudiantesPage() {
                   placeholder="Ingrese el teléfono"
                   value={formData.celular}
                   onChange={handleTelefonoChange}
+                  required
                 />
               </div>
 
@@ -471,7 +559,7 @@ export default function estudiantesPage() {
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   type="submit" // Cambiado a type="submit" para activar la función handleSubmit
                 >
-                  Registrar Facultad
+                  Registrar
                 </button>
               </div>
             </form>
@@ -479,105 +567,171 @@ export default function estudiantesPage() {
         </div>
       )}
 
-{showFormulario && selectedEstudiantes && (
+      {showFormulario && selectedEstudiantes && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <form
+            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+            onSubmit={(e) => handleUpdate(e, selectedEstudiantes.id)}
+          >
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="cedula"
+              >
+                Cédula
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="cedula"
+                type="text"
+                placeholder="Cédula"
+                value={selectedEstudiantes ? selectedEstudiantes.cedula : ""}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="nombre"
+              >
+                Nombre
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="nombre"
+                type="text"
+                placeholder="Nombre"
+                value={selectedEstudiantes ? selectedEstudiantes.nombre : ""}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="apellido"
+              >
+                Apellido
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="apellido"
+                type="text"
+                placeholder="Apellido"
+                value={selectedEstudiantes ? selectedEstudiantes.apellido : ""}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="correo"
+              >
+                Correo
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="correo"
+                type="text"
+                placeholder="Correo"
+                value={selectedEstudiantes ? selectedEstudiantes.correo : ""}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="direccion"
+              >
+                Dirección
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="direccion"
+                type="text"
+                placeholder="Dirección"
+                value={selectedEstudiantes ? selectedEstudiantes.direccion : ""}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="telefono"
+              >
+                Teléfono
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="telefono"
+                type="text"
+                placeholder="Teléfono"
+                value={selectedEstudiantes ? selectedEstudiantes.celular : ""}
+                onChange={handleTelefonoChangeEditForm}
+                required
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={handleFormularioToggle}
+              >
+                Cerrar
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit"
+              >
+                Actualizar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+{showFileUploadForm && (
   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <form
-      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-      onSubmit={(e) => handleUpdate(e, selectedEstudiantes.id)}
-    >
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cedula">
-          Cédula
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="cedula"
-          type="text"
-          placeholder="Cédula"
-          value={selectedEstudiantes ? selectedEstudiantes.cedula : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
-          Nombre
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="nombre"
-          type="text"
-          placeholder="Nombre"
-          value={selectedEstudiantes ? selectedEstudiantes.nombre : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apellido">
-          Apellido
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="apellido"
-          type="text"
-          placeholder="Apellido"
-          value={selectedEstudiantes ? selectedEstudiantes.apellido : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="correo">
-          Correo
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="correo"
-          type="text"
-          placeholder="Correo"
-          value={selectedEstudiantes ? selectedEstudiantes.correo : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="direccion">
-          Dirección
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="direccion"
-          type="text"
-          placeholder="Dirección"
-          value={selectedEstudiantes ? selectedEstudiantes.direccion : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="telefono">
-          Teléfono
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="telefono"
-          type="text"
-          placeholder="Teléfono"
-          value={selectedEstudiantes ? selectedEstudiantes.celular : ""}
-          onChange={handleTelefonoChangeEditForm}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleFormularioToggle}
-        >
-          Cerrar
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          type="submit"
-        >
-          Actualizar
-        </button>
-      </div>
-    </form>
+    <div className="flex justify-center items-center h-screen">
+      <form
+        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+        onSubmit={handleFileSubmit} // Aquí irá la función para manejar el envío del archivo
+      >
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="fileUpload"
+          >
+            Subir archivo
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="fileUpload"
+            type="file"
+            onChange={handleFileChange} // Aquí irá la función para manejar el cambio en el archivo seleccionado
+            required
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleFileUploadFormToggle}
+          >
+            Cerrar
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Subir
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 )}
 
