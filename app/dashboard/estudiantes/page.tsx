@@ -34,6 +34,7 @@ export default function estudiantesPage() {
     const fetchEstudiantesAndCarreras = async () => {
       try {
         const carrera_id = localStorage.getItem("carrera");
+        
         setUserCarrera(carrera_id);
 
         const estudiantesResponse = await fetch(
@@ -159,8 +160,9 @@ export default function estudiantesPage() {
 
   };
 
-  const handleCarpetas = () => {
+  const handleCarpetas = (id) => {
     window.location.href = `/dashboard/estudiantes/carpetasEstudiantes`;
+    localStorage.setItem('StudentId', id);
   };
 
   const handleUpdate = (e, id) => {
@@ -275,7 +277,7 @@ export default function estudiantesPage() {
               <tr
                 key={estudiantes.id}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                onClick={() => handleCarpetas()}
+                onClick={() => handleCarpetas(estudiantes.id)}
               >
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                   {estudiantes.cedula}

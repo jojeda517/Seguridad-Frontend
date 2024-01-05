@@ -9,23 +9,31 @@ import { Toast } from "@/components/toast";
 
 export default function archivosPage() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [estudiantes, setEstudiantes] = useState([]);
+  const [documentos, setDocumentos] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [showFormulario, setShowFormulario] = useState(false);
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [carreras, setCarreras] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [userCarrera, setUserCarrera] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [studentId, setStudentId] = useState<string | null>(null);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [userId, setuserId] = useState<string | null>(null);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [formData, setFormData] = useState({
-    id: "0",
-    nombre: "",
-    apellido: "",
-    cedula: "",
-    correo: "",
-    direccion: "",
-    celular: "",
+    id: '0',
+    id_categoria: '0',
+    id_usuario: '0',
+    id_estudiante: '0',
+    nombre: '',
+    descripcion: '',
+    fecha: '2024-01-05T02:01:59.787Z'
   });
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [selectedEstudiantes, setSelectedEstudiantes] = useState(null);
@@ -35,31 +43,32 @@ export default function archivosPage() {
     const fetchEstudiantesAndCarreras = async () => {
       try {
         const carrera_id = localStorage.getItem("carrera");
+        const estudiante_id = localStorage.getItem("StudentId");
+        const user_id = localStorage.getItem("userId");
+         // Modificado a 'selectedStudentId'
+        setuserId(user_id);
         setUserCarrera(carrera_id);
-
-        const estudiantesResponse = await fetch(
-          `http://3.21.41.85/api/v1/estudiantes/${carrera_id}`
+        setStudentId(estudiante_id);
+        
+        const categoriaResponse = await fetch(
+          `http://3.21.41.85/api/v1/categorias/${carrera_id}`
         );
-        if (estudiantesResponse.ok) {
-          const estudiantesData = await estudiantesResponse.json();
-          setEstudiantes(estudiantesData);
-        } else {
-          throw new Error("Error fetching estudiantes");
-        }
-
-        const carrerasResponse = await fetch(
-          `http://3.21.41.85/api/v1/carrera/${carrera_id}`
-        );
-        if (carrerasResponse.ok) {
-          const carrerasData = await carrerasResponse.json();
-          setCarreras(carrerasData);
-
-          if (carrerasData.length > 0) {
-            const firstCarreraId = carrerasData[0].id;
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              carrera_id: firstCarreraId,
-            }));
+  
+        if (categoriaResponse.ok) {
+          const categoriaData = await categoriaResponse.json();
+          setCategorias(categoriaData);
+  
+          if (estudiante_id) { // Comprobación si 'estudiante_id' está definido
+            const documentosResponse = await fetch(
+              `http://3.21.41.85/api/v1/documento/${estudiante_id}/${categoriaData[0]?.id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
+            );
+  
+            if (documentosResponse.ok) {
+              const documentosData = await documentosResponse.json();
+              setDocumentos(documentosData);
+            } else {
+              throw new Error("Error fetching estudiantes");
+            }
           }
         } else {
           throw new Error("Error fetching carreras");
@@ -68,33 +77,34 @@ export default function archivosPage() {
         console.error("Error:", error);
       }
     };
-
+  
     fetchEstudiantesAndCarreras();
   }, []);
+  
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 8;
 
-  const totalPages = Math.ceil(estudiantes.length / itemsPerPage);
+  const totalPages = Math.ceil(documentos.length / itemsPerPage);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = estudiantes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = documentos.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
   const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`, {
+    fetch(`http://3.21.41.85/api/v1/documento/${id}/`, {
       method: "DELETE",
     })
       .then((response) => {
         if (response.ok) {
-          setEstudiantes((prevEstudiantes) =>
-          prevEstudiantes.filter((estudiante) => estudiante.id !== id)
+          setDocumentos((prevDocumentos) =>
+          prevDocumentos.filter((documentos) => documentos.id !== id)
           );
           mostrarMensajeToast("Estudiante eliminada");
         } else {
@@ -102,18 +112,17 @@ export default function archivosPage() {
         }
       })
       .catch((error) => console.error("Error deleting:", error));
-    mostrarMensajeToast("Error al eliminar");
+      //mostrarMensajeToast("Error al eliminar");
   };
 
   const handleFormularioToggle = () => {
     setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
-    setSelectedEstudiantes(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
   };
 
   const handleInsert = (e) => {
     e.preventDefault();
-
-    fetch(`http://3.21.41.85/api/v1/estudiante/${userCarrera}`, {
+  
+    fetch(`http://3.21.41.85/api/v1/documento/${userId}/${categorias[0].id}/${studentId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -122,21 +131,76 @@ export default function archivosPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]); // Actualiza el estado con los datos recibidos del servidor
-        setFormData({ 
-          id: "0",
-          nombre: "",
-          apellido: "",
-          cedula: "",
-          correo: "",
-          direccion: "",
-          celular: "",});
+        setDocumentos((prevDocumentos) => [...prevDocumentos, data.result]);
+        setFormData({
+          id: '0',
+          id_categoria: '0',
+          id_usuario: '0',
+          id_estudiante: '0',
+          nombre: '',
+          descripcion: '',
+          fecha: '2024-01-05T02:01:59.787Z'
+        });
         setShowFormulario(false);
         mostrarMensajeToast("Estudiante Registrada");
+  
+        const nuevoDocumentoId = data.result.id;
+        console.log(nuevoDocumentoId);
+  
+         // Reemplaza 'tuArchivo' con el archivo real que quieres subir
+        const archivoFormData = new FormData();
+        console.log(selectedFile);
+        archivoFormData.append("file", selectedFile );
+  
+        fetch(`http://3.21.41.85/api/v1/archivo/${nuevoDocumentoId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: archivoFormData,
+        })
+          .then((response) => {
+            if (response.ok) {
+              // Hacer algo si la carga del archivo fue exitosa
+            } else {
+              // Manejar errores en la carga del archivo
+            }
+          })
+          .catch((error) => console.error("Error subiendo el archivo:", error));
+          mostrarMensajeToast('Error al subir el archivo')
       })
-      .catch((error) => console.error("Error inserting data:", error));
-      mostrarMensajeToast("Error al Registrar");
+      .catch((error) => {
+        console.error("Error inserting data:", error);
+        mostrarMensajeToast("Error al Registrar");
+      });
   };
+
+
+  const handleDownload = (documentoId) => {
+    fetch(`http://3.21.41.85/api/v1/archivo/${documentoId}`)
+      .then((response) => {
+        if (response.ok) {
+          return response.blob();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then((blob) => {
+        // Crear un URL para el blob y crear un enlace para descargar
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `documento_${documentoId}.pdf`); // Nombre del archivo descargado
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      })
+      .catch((error) => {
+        console.error('Error downloading file:', error);
+        mostrarMensajeToast('Error al descargar el archivo');
+      });
+  };
+  
+  
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -154,45 +218,18 @@ export default function archivosPage() {
     }
   };
 
-  const handleEdit = (estudiante) => {
-    setSelectedEstudiantes(estudiante);
+  const handleEdit = (documento) => {
+    setSelectedEstudiantes(documento);
     setShowFormulario(true);
   };
 
-  const handleCarpetas = (estudiante) => {
-    window.location.href = `/dashboard/estudiantes/carpetasEstudiantes`;
+  const handleFileChange = (event) => {
+    console.log(event.target.files[0]);
+    setSelectedFile(event.target.files[0]);
   };
 
-  const handleUpdate = (e, id) => {
-    e.preventDefault();
 
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(selectedEstudiantes),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success" && data.result) {
-          setEstudiantes((prevEstudiantes) =>
-            prevEstudiantes.map((estudiante) =>
-            estudiante.id === id ? { ...estudiante, ...data.result } : estudiante
-            )
-          );
-          mostrarMensajeToast("Estudiante actualizado");
-        } else {
-          console.error("Error en la edición:", data.message);
-          mostrarMensajeToast("Error al editar");
-        }
-      })
-      .catch((error) => console.error("Error updating data:", error))
-      .finally(() => {
-        setShowFormulario(false); // Cierra el formulario después de la edición
-      });
-  };
-  // ... (resto del código)
+
 
   const [mostrarToast, setMostrarToast] = useState(false);
   const [mensajeToast, setMensajeToast] = useState("");
@@ -207,40 +244,14 @@ export default function archivosPage() {
     }, 5000);
   };
 
-  const handleTelefonoChange = (e) => {
-    const input = e.target.value;
-    const regex = /^[0-9]*$/;
-    
-    // Expresión regular para números
-  
-    if (regex.test(input) || input === '') {
-      setFormData({
-        ...formData,
-        celular: input,
-      });
-    }
-  };
 
-  const handleTelefonoChangeEditForm = (e) => {
-    const input = e.target.value;
-    const regex = /^[0-9]*$/;
-  
-    if (regex.test(input) || input === '') {
-      setSelectedEstudiantes((prevSelectedEstudiantes) => ({
-        ...prevSelectedEstudiantes,
-        celular: input,
-      }));
-    }
-  };
+
   
 
   return (
     <>
       <div className="text-center font-bold my-4 mb-8">
-        <h1>Gestor Estudiantes</h1>
-      </div>
-      <div className="text-start font-bold my-4 mb-8">
-        <h3>Carrera de {carreras.nombre}</h3>
+        <h1>Archivos</h1>
       </div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -262,36 +273,29 @@ export default function archivosPage() {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((estudiantes) => (
+            {currentItems.map((documentos) => (
               <tr
-                key={estudiantes.id}
+                key={documentos.id}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                 
               >
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                  {estudiantes.cedula}
+                  {documentos.nombre}
                 </td>
-                <td className="px-6 py-4">{estudiantes.nombre}</td>
-                <td className="px-6 py-4">{estudiantes.apellido}</td>
+                <td className="px-6 py-4">{documentos.descripcion}</td>
+                <td className="px-6 py-4">{documentos.fecha}</td>
 
                 <td className="flex items-center px-6 py-4">
                   <a
-                    href="#"
-                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    onClick={() => handleEdit(estudiantes)}
-                  >
-                    <EditIcon />
-                  </a>
-                  <a
                     className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                    onClick={() => handleDelete(estudiantes.id)}
+                    onClick={() => handleDelete(documentos.id)}
                   >
                     <DeleteIcon />
                   </a>
                   <a
                     href="#"
                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    onClick={() => handleEdit(estudiantes)}
+                    onClick={() => handleDownload(documentos.id)}
                   >
                     <DownloadIcon></DownloadIcon>
                   </a>
@@ -348,231 +352,85 @@ export default function archivosPage() {
           <span className="sr-only">New item</span>
         </button>
       </div>
+      
       {showFormulario && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="flex justify-center items-center h-screen">
-            <form
-              className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-              onSubmit={handleInsert} // Agrega esta función al evento onSubmit del formulario
-            >
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="cedula"
-                >
-                  Cédula
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="cedula"
-                  type="text"
-                  placeholder="Ingrese la cédula"
-                  value={formData.cedula}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="nombre"
-                >
-                  Nombre
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="nombre"
-                  type="text"
-                  placeholder="Ingrese el nombre"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="apellido"
-                >
-                  Apellido
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="apellido"
-                  type="text"
-                  placeholder="Ingrese el apellido"
-                  value={formData.apellido}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="correo"
-                >
-                  Correo
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="correo"
-                  type="text"
-                  placeholder="Ingrese el correo"
-                  value={formData.correo}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="direccion"
-                >
-                  Dirección
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="direccion"
-                  type="text"
-                  placeholder="Ingrese la dirección"
-                  value={formData.direccion}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="telefono"
-                >
-                  Teléfono
-                </label>
-                <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="telefono"
-                  type="text"
-                  placeholder="Ingrese el teléfono"
-                  value={formData.celular}
-                  onChange={handleTelefonoChange}
-                />
-              </div>
+          {/* ... */}
+          <form
+            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+            onSubmit={handleInsert}
+          >
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="nombre"
+              >
+                Nombre
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="nombre"
+                name="nombre"
+                type="text"
+                placeholder="Ingrese el nombre"
+                value={formData.nombre}
+                onChange={handleInputChange}
+              />
+            </div>
+            {/* Campos adicionales */}
+            {/* Descripción */}
+            {/* Fecha */}
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="descripcion"
+              >
+                Descripción
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="descripcion"
+                name="descripcion"
+                type="text"
+                placeholder="Ingrese la descripción"
+                value={formData.descripcion}
+                onChange={handleInputChange}
+              />
+            </div>
 
-              <div className="flex items-center justify-between">
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={handleFormularioToggle}
-                >
-                  Cerrar
-                </button>
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  type="submit" // Cambiado a type="submit" para activar la función handleSubmit
-                >
-                  Registrar Facultad
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="archivo"
+              >
+                Subir Archivo
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="archivo"
+                name="archivo"
+                type="file"
+                onChange={handleFileChange}
+              />
+            </div>
+            {/* Botones */}
+            <div className="flex items-center justify-between">
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={handleFormularioToggle}
+              >
+                Cerrar
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit"
+              >
+                Registrar Facultad
+              </button>
+            </div>
+          </form>
         </div>
       )}
-
-{showFormulario && selectedEstudiantes && (
-  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <form
-      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-      onSubmit={(e) => handleUpdate(e, selectedEstudiantes.id)}
-    >
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="cedula">
-          Cédula
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="cedula"
-          type="text"
-          placeholder="Cédula"
-          value={selectedEstudiantes ? selectedEstudiantes.cedula : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
-          Nombre
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="nombre"
-          type="text"
-          placeholder="Nombre"
-          value={selectedEstudiantes ? selectedEstudiantes.nombre : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apellido">
-          Apellido
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="apellido"
-          type="text"
-          placeholder="Apellido"
-          value={selectedEstudiantes ? selectedEstudiantes.apellido : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="correo">
-          Correo
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="correo"
-          type="text"
-          placeholder="Correo"
-          value={selectedEstudiantes ? selectedEstudiantes.correo : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="direccion">
-          Dirección
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="direccion"
-          type="text"
-          placeholder="Dirección"
-          value={selectedEstudiantes ? selectedEstudiantes.direccion : ""}
-          onChange={handleInputChange}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="telefono">
-          Teléfono
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="telefono"
-          type="text"
-          placeholder="Teléfono"
-          value={selectedEstudiantes ? selectedEstudiantes.celular : ""}
-          onChange={handleTelefonoChangeEditForm}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleFormularioToggle}
-        >
-          Cerrar
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          type="submit"
-        >
-          Actualizar
-        </button>
-      </div>
-    </form>
-  </div>
-)}
-
 
       {mostrarToast && (
         <div
