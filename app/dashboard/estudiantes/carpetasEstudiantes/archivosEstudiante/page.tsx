@@ -177,7 +177,7 @@ export default function archivosPage() {
       })
       .catch((error) => {
         console.error("Error inserting data:", error);
-        mostrarMensajeToast("Error al Registrar");
+        //mostrarMensajeToast("Error al Registrar");
       });
   };
   
@@ -382,6 +382,7 @@ export default function archivosPage() {
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="nombre"
+                
               >
                 Nombre
               </label>
@@ -393,6 +394,7 @@ export default function archivosPage() {
                 placeholder="Ingrese el nombre"
                 value={formData.nombre}
                 onChange={handleInputChange}
+                required
               />
             </div>
             {/* Campos adicionales */}
@@ -413,6 +415,7 @@ export default function archivosPage() {
                 placeholder="Ingrese la descripción"
                 value={formData.descripcion}
                 onChange={handleInputChange}
+                required
               />
             </div>
 
@@ -429,6 +432,7 @@ export default function archivosPage() {
                 name="archivo"
                 type="file"
                 onChange={handleFileChange}
+                required
               />
             </div>
             {/* Botones */}
@@ -443,7 +447,7 @@ export default function archivosPage() {
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 type="submit"
               >
-                Registrar Facultad
+                Registrar
               </button>
             </div>
           </form>
