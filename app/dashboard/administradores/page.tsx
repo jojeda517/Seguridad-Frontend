@@ -160,6 +160,7 @@ const AdministradoresPage = () => {
   };
 
   useEffect(() => {
+
     fetchUserData();
   }, []);
 

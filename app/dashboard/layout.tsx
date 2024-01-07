@@ -67,7 +67,7 @@ export default function dashboardLayout({
 
 										<span className="flex-1 ms-3 whitespace-nowrap">Carreras</span>
 									</Link>
-									<Link href="/dashboard/categorias"
+									<Link href="/dashboard/#"
 										className="flex items-center p-2 colortext rounded-lg dark:text-white hover:bg-gray-700 dark:hover:bg-gray-700 group">
 
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">

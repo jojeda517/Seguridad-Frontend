@@ -18,6 +18,7 @@ const CarrerasPage = () => {
     const [selectedCarrera, setSelectedCarrera] = useState('');
 
     // Estados para filtrar las carreras por facultad
+    const [filteredCarreras, setFilteredCarreras] = useState([]);
     const [showFormulario, setShowFormulario] = useState(false);
 
     // Paginación
@@ -102,6 +103,27 @@ const CarrerasPage = () => {
                 // 4. Actualizar el estado o variable con los datos de facultades
                 setFacultades(data);
 
+                // 5. Si hay facultades disponibles, seleccionar automáticamente la primera
+                if (data.length > 0) {
+                    // 6. Obtener el ID de la primera facultad
+                    const firstFacultadId = data[0].id;
+
+                    // 7. Actualizar el estado del formulario con el ID de la primera facultad
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        facultad_id: firstFacultadId,
+                    }));
+
+                    // 8. Cargar las carreras para la primera facultad automáticamente
+                    console.log(firstFacultadId);
+                    const carrerasForFirstFacultad = await fetchCarrerasForFacultad(firstFacultadId);
+
+                    // 9. Imprimir en consola las carreras obtenidas
+                    console.log(carrerasForFirstFacultad);
+
+                    // 10. Actualizar el estado o variable con las carreras filtradas
+                    setFilteredCarreras(carrerasForFirstFacultad);
+                }
             } else {
                 // 11. Lanzar un error si la respuesta no es exitosa
                 throw new Error('Error fetching facultades');
