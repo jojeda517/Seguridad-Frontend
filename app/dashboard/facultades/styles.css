@@ -1,0 +1,16 @@
+.colorbg{
+    background-color: #8B0000;
+}
+.secondcolorbg{
+    background-color: #0972aa;
+}
+.colortext{
+    color: white;
+}
+.colorwhite{
+    background-color: white;
+}
+body{
+    margin: 0;
+    padding: 0;
+}
