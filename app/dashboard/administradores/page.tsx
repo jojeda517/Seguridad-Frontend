@@ -6,25 +6,24 @@ import '../styles.css';
 import { Toast } from '@/components/toast';
 
 export default function AdministradoresPage() {
+
   const [administradores, setAdministradores] = useState([]);
-  const [showFormulario, setShowFormulario] = useState(false);
-  const [facultades, setFacultades] = useState([]);
+  const [selectedAdministrador, setSelectedAdministrador] = useState(null);
+
   const [carreras, setCarreras] = useState([]);
+  const [facultades, setFacultades] = useState([]);
+
   const [selectedFacultad, setSelectedFacultad] = useState('');
+  const [filteredCarreras, setFilteredCarreras] = useState([]);
 
-
-  const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 8;
-
+  const [showFormulario, setShowFormulario] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(administradores.length / itemsPerPage);
-
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = administradores.slice(indexOfFirstItem, indexOfLastItem);
-
-  const [selectedAdministrador, setSelectedAdministrador] = useState(null);
 
   const [formData, setFormData] = useState({
     id: '0',
@@ -48,7 +47,6 @@ export default function AdministradoresPage() {
     carrera_id: '',
   });
 
-  const [filteredCarreras, setFilteredCarreras] = useState([]);
   const fetchUserData = async () => {
     try {
       const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario/rol/1');
@@ -112,7 +110,6 @@ export default function AdministradoresPage() {
     }
   };
 
-
   const fetchFacultades = async () => {
     try {
       const response = await fetch('http://3.21.41.85/api/v1/facultad');
@@ -141,6 +138,7 @@ export default function AdministradoresPage() {
       console.error('Error fetching facultades:', error);
     }
   };
+
   const fetchCarrerasForFacultad = async (facultadId) => {
     try {
       const response = await fetch(`http://3.21.41.85/api/v1/carrera/facultad/${facultadId}`);
@@ -157,13 +155,12 @@ export default function AdministradoresPage() {
     }
   };
 
-
   useEffect(() => {
-
     fetchUserData();
   }, []);
-  // Agregar administrador
 
+
+  // Agregar administrador
   const handleInputChange = (e) => {
     const { id, value } = e.target;
 
@@ -179,9 +176,6 @@ export default function AdministradoresPage() {
       }));
     }
   };
-
-
-
 
   const handleFormularioToggle = () => {
     setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
@@ -210,7 +204,6 @@ export default function AdministradoresPage() {
       .catch((error) => console.error('Error deleting:', error));
     mostrarMensajeToast('Error al Eliminar');
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
@@ -259,7 +252,6 @@ export default function AdministradoresPage() {
     }
   };
 
-
   const handleSelectChange = (event) => {
     const selectedCarreraId = parseInt(event.target.value, 10);
     console.log(selectedCarreraId);
@@ -291,7 +283,6 @@ export default function AdministradoresPage() {
     );
     setFilteredCarreras(filteredCarreras);
   };
-
 
   const handleEdit = (administrador) => {
     setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
@@ -356,8 +347,6 @@ export default function AdministradoresPage() {
       setMostrarToast(false);
     }, 5000);
   };
-
-
 
   return (
     <><div className="text-center font-bold my-4 mb-8">
@@ -695,6 +684,7 @@ export default function AdministradoresPage() {
                   ))}
                 </select>
               </div>
+
               <div className="flex items-center justify-between">
                 <button
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
