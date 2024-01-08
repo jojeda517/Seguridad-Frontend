@@ -27,6 +27,7 @@ export default function DashboardPage() {
 					<h1 className="text-2xl mt-4">Bienvenido al sistema {firstName} {lastName}</h1>
 				</div>
 			</div>
+
 		</>
 	);
 }
