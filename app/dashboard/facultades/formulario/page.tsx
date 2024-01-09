@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { withAuth } from "@/services/withAuth";
 
-export default function Formulario() {
+
+const Formulario = () => {
   const router = useRouter();
 
   const handleSubmit = (e) => {
@@ -64,3 +66,4 @@ export default function Formulario() {
     </div>
   );
 }
+export default withAuth(Formulario);

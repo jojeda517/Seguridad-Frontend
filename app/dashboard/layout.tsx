@@ -9,16 +9,20 @@ export default function dashboardLayout({
 	children: React.ReactNode;
 }) {
 	const [userRole, setUserRole] = useState<string | null>(null);
+	const [userRoleMicrosoft, setuserRoleMicrosoft] = useState<string | null>(null);
 	const [firstName, setFirstName] = useState<string | null>(null);
 	const [lastName, setLastName] = useState<string | null>(null);
 
 	useEffect(() => {
 		const role = localStorage.getItem('userRole');
+		const roleIDMicrosoft = localStorage.getItem('userRoleMicrosoft');
 		const firstName = localStorage.getItem('firstName');
 		const lastName = localStorage.getItem('lastName');
+
 		setUserRole(role);
 		setFirstName(firstName);
 		setLastName(lastName);
+		setuserRoleMicrosoft(roleIDMicrosoft);
 	}, []);
 
 	return (
@@ -31,7 +35,8 @@ export default function dashboardLayout({
 				<div className="h-full px-3 py-4 overflow-y-auto colorbg dark:bg-gray-800">
 					<ul className="space-y-2 font-medium">
 						<ul>
-							{userRole === '1' && (
+							{/* Control para mostrar el menú de acuerdo al rol del usuario, sea normal o de microsoft */}
+							{(userRole === '1' || userRoleMicrosoft === '1') && (
 								<li key="admin">
 									{/* Aquí puedes poner el código para mostrar el elemento del menú para el rol de admin */}
 									<Link href="/dashboard"
@@ -66,7 +71,7 @@ export default function dashboardLayout({
 								</li>
 
 							)}
-							{userRole === '2' && (
+							{(userRole === '2' || userRoleMicrosoft === '2') && (
 
 								<li key="secretario">
 
@@ -88,7 +93,7 @@ export default function dashboardLayout({
 
 
 							)}
-							{userRole === '3' && (
+							{(userRole === '3' || userRoleMicrosoft === '3') && (
 								<li key="superadmin">
 
 									<Link href="/dashboard"

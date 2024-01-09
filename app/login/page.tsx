@@ -7,7 +7,7 @@ import { Input } from "@nextui-org/input";
 import { useRouter } from 'next/navigation'
 import { Button } from "@nextui-org/button";
 import { withAuth } from '@/services/withAuth';
-import { login } from '../../services/authService';
+import { login, loginMicrosoft } from '@/services/authService';
 import React, { useEffect, useState } from "react";
 import signInWithMicrosoft from "../../firebase/Auth/singin";
 
@@ -42,7 +42,7 @@ const LoginPage = () => {
         router.push('/dashboard');
       } else {
         // Manejar el caso en que las credenciales no son correctas
-        console.log('Credenciales incorrectas');
+        console.log('Credenciales Incorrectas');
         mostrarMensajeToast('Credenciales incorrectas. Inténtalo de nuevo.');
 
       }
@@ -55,45 +55,49 @@ const LoginPage = () => {
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
-    const { result, error } = await signInWithMicrosoft();
+    try {
+      const { result, error } = await signInWithMicrosoft();
 
-    if (error) {
-      console.log('error');
-      return console.log(error);
-    }
 
-    // else successful
-    console.log('Successful!');
-    console.log(result?.email);
+      if (error) {
+        console.log('error');
+        return console.log(error);
+      }
 
-    const response = await fetch('http://3.21.41.85/api/v1/usuario/login/microsoft', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      // Lógica para obtener el nombre y apellido del usuario desde el backend en Microsoft
+      //console.log("Nombre completo:", result?.displayName);
+      const nombreCompleto = result?.displayName?.split(' ');
+      const nombre = nombreCompleto?.[2];
+      const apellido = nombreCompleto?.[0];
+
+      // Crear un objeto con el nombre y apellido del usuario de microsoft
+      const jsonDisplayName = {
+        nombre: nombre,
+        apellido: apellido
+      }
+
+      // Lógica para obtener el rol del usuario desde el backend en Microsoft (NECESARIO PARA EL LOGIN)
+      const credencialesMicrosoft = {
         correo: result?.email,
         contrasena: "test",
-      }),
-    });
+      }
 
-    console.log(response);
+      const userIDMicrosoft = await loginMicrosoft(credencialesMicrosoft)
 
-    if (response.ok) {
+      if (userIDMicrosoft != null) {
+        localStorage.setItem('userRoleMicrosoft', userIDMicrosoft);
+        localStorage.setItem('nombreMicrosoft', jsonDisplayName.nombre);
+        localStorage.setItem('apellidoMicrosoft', jsonDisplayName.apellido);
+        router.push('/dashboard');
 
-      // Lógica para obtener el rol del usuario desde el backend en Microsoft
-      const rol_id = await response.json();
-      console.log(rol_id);
+      } else {
+        // Manejar el caso en que las credenciales no son correctas
+        console.log('Credenciales Incorrectas');
+        mostrarMensajeToast('Credenciales incorrectas. Inténtalo de nuevo.');
 
-      // Almacena el rol en la sesión
-      const role = rol_id;
-
-      // Guarda el rol en localStorage
-      localStorage.setItem('userRole', role);
-
-      router.push('/dashboard');
-    } else {
-      mostrarMensajeToast('No estas autorizado para entrar al sistema.');
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
     }
   };
 
@@ -115,6 +119,11 @@ const LoginPage = () => {
     localStorage.removeItem('userRole');
     localStorage.removeItem('firstName');
     localStorage.removeItem('lastName');
+
+    // Elimina los datos del usuario de Microsoft del almacenamiento local
+    localStorage.removeItem('userRoleMicrosoft');
+    localStorage.removeItem('nombreMicrosoft');
+    localStorage.removeItem('apellidoMicrosoft');
   }, []);
 
   return (
@@ -182,7 +191,7 @@ const LoginPage = () => {
           </div>
 
           <Button className="bg-custom text-white w-full py-2 font-semibold mt-4 shadow-sm"
-          //onClick={handleForm}
+            onClick={handleForm}
           >
             <Image src="/Microsoft.svg" alt="google-icon" width={20} height={20} />
             Continuar con Microsoft

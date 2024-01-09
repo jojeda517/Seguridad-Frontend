@@ -14,14 +14,23 @@ export const withAuth = (WrappedComponent) => {
             try {
 
                 // Verifica si el usuario está autenticado al intentar obtener la información del usuario
-                const userRole = localStorage.getItem('userRole');
-                const firstName = localStorage.getItem('firstName');
-                const lastName = localStorage.getItem('lastName');
+                const userRoleMicrosoft = localStorage.getItem('userRoleMicrosoft');
 
-                // Si las credenciales no son correctas, redirige a la página de inicio de sesión
-                if (!userRole || !firstName || !lastName) {
-                    router.push('/login');
+                if (userRoleMicrosoft) {
+                    if (!userRoleMicrosoft) {
+                        router.push('/login');
+                    }
+                } else {
+                    const userRole = localStorage.getItem('userRole');
+                    const firstName = localStorage.getItem('firstName');
+                    const lastName = localStorage.getItem('lastName');
+
+                    // Si las credenciales no son correctas, redirige a la página de inicio de sesión
+                    if (!userRole || !firstName || !lastName) {
+                        router.push('/login');
+                    }
                 }
+
             } catch (error) {
                 console.error('Error al verificar la autenticación', error);
                 router.push('/login');

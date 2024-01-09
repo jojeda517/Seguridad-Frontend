@@ -1,12 +1,14 @@
 "use client";
 
+import "../facultades/styles.css";
+import { Toast } from "@/components/toast";
+import { withAuth } from "@/services/withAuth";
 import React, { useEffect, useState } from "react";
 import { EditIcon } from "../administradores/EditIcon";
 import { DeleteIcon } from "../administradores/DeleteIcon";
-import "../facultades/styles.css";
-import { Toast } from "@/components/toast";
 
-export default function estudiantesPage() {
+
+const EstudiantesPage = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [estudiantes, setEstudiantes] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -97,7 +99,7 @@ export default function estudiantesPage() {
   const handleFileUploadFormToggle = () => {
     setShowFileUploadForm((prevState) => !prevState);
   };
-  
+
 
   const handleDelete = (id) => {
     fetch(
@@ -254,7 +256,7 @@ export default function estudiantesPage() {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]; // Obtiene el archivo seleccionado del evento
-  
+
     // Aquí puedes realizar acciones con el archivo seleccionado, como establecerlo en el estado
     // Por ejemplo, podrías guardar el archivo en el estado si usas un hook de estado:
     setSelectedFile(file);
@@ -265,17 +267,17 @@ export default function estudiantesPage() {
       console.error("No se ha seleccionado ningún archivo.");
       return;
     }
-  
+
     const archivoformData = new FormData();
     archivoformData.append("file", selectedFile);
-  
+
     try {
-      
+
       const response = await fetch(`http://3.21.41.85/api/v1/cargar-estudiantes/${userCarrera}`, {
         method: "POST",
         body: archivoformData,
       });
-  
+
       if (response.ok) {
         // Procesar la respuesta si es necesario
         console.log("Archivo cargado exitosamente.");
@@ -286,8 +288,8 @@ export default function estudiantesPage() {
       console.error("Error al realizar la carga del archivo:", error);
     }
   };
-  
-  
+
+
 
   return (
     <>
@@ -371,11 +373,10 @@ export default function estudiantesPage() {
             <li key={index}>
               <a
                 href="#"
-                className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
-                  currentPage === index + 1
+                className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${currentPage === index + 1
                     ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                     : ""
-                }`}
+                  }`}
                 onClick={() => handlePageChange(index + 1)}
                 style={{ marginTop: "8px" }}
               >
@@ -693,47 +694,47 @@ export default function estudiantesPage() {
         </div>
       )}
 
-{showFileUploadForm && (
-  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="flex justify-center items-center h-screen">
-      <form
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-        onSubmit={handleFileSubmit} // Aquí irá la función para manejar el envío del archivo
-      >
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="fileUpload"
-          >
-            Subir archivo
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="fileUpload"
-            type="file"
-            onChange={handleFileChange} // Aquí irá la función para manejar el cambio en el archivo seleccionado
-            required
-          />
-        </div>
+      {showFileUploadForm && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="flex justify-center items-center h-screen">
+            <form
+              className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+              onSubmit={handleFileSubmit} // Aquí irá la función para manejar el envío del archivo
+            >
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                  htmlFor="fileUpload"
+                >
+                  Subir archivo
+                </label>
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="fileUpload"
+                  type="file"
+                  onChange={handleFileChange} // Aquí irá la función para manejar el cambio en el archivo seleccionado
+                  required
+                />
+              </div>
 
-        <div className="flex items-center justify-between">
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleFileUploadFormToggle}
-          >
-            Cerrar
-          </button>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Subir
-          </button>
+              <div className="flex items-center justify-between">
+                <button
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  onClick={handleFileUploadFormToggle}
+                >
+                  Cerrar
+                </button>
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  type="submit"
+                >
+                  Subir
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
 
       {mostrarToast && (
@@ -784,3 +785,4 @@ export default function estudiantesPage() {
     </>
   );
 }
+export default withAuth(EstudiantesPage);
