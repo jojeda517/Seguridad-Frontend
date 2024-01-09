@@ -3,63 +3,55 @@
 import 'firebase/auth';
 import '../login/styles.css';
 import Image from "next/image";
-import React, { useState } from "react";
 import { Input } from "@nextui-org/input";
 import { useRouter } from 'next/navigation'
 import { Button } from "@nextui-org/button";
+import { withAuth } from '@/services/withAuth';
+import { login } from '../../services/authService';
+import React, { useEffect, useState } from "react";
 import signInWithMicrosoft from "../../firebase/Auth/singin";
-import jwt from 'jsonwebtoken';
-import { serialize } from 'cookie';
 
-export default function LoginPage() {
+
+const LoginPage = () => {
   const router = useRouter()
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
+  const [credentials, setCredentials] = useState({
+    correo: '',
+    contrasena: ''
+  });
 
-  const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  // Manejador de cambios en los campos de entrada
+  const handleChange = (e: any) => {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value,
+    });
+  };
 
+  // Manejador de inicio de sesión
+  const handleLogin = async () => {
     try {
-      const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          correo,
-          contrasena,
-        }),
-      });
+      // Intenta iniciar sesión
+      const user = await login(credentials);
 
-      if (response.ok) {
-
-        // Lógica para obtener el rol del usuario desde el backend
-        const data = await response.json();
-
-        // Almacena el rol en la sesión
-        const role = data.rol_id;
-        const nombre = data.nombre;
-        const apellido = data.apellido;
-        const carrera_id = data.carrera_id;
-        const user_id = data.id;
-
-        // Guarda el rol en localStorage
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('firstName', nombre);
-        localStorage.setItem('lastName', apellido);
-        localStorage.setItem('carrera', carrera_id);
-        localStorage.setItem('userId', user_id);
+      // Si las credenciales son correctas, redirige al dashboard
+      if (user != null) {
+        localStorage.setItem('userRole', user.rol_id);
+        localStorage.setItem('firstName', user.nombre);
+        localStorage.setItem('lastName', user.apellido);
 
         router.push('/dashboard');
       } else {
-        // Si hay un error en la respuesta, maneja el error (puedes mostrar un mensaje, por ejemplo)
+        // Manejar el caso en que las credenciales no son correctas
+        console.log('Credenciales incorrectas');
         mostrarMensajeToast('Credenciales incorrectas. Inténtalo de nuevo.');
+
       }
     } catch (error) {
-      console.error('Error al conectarse con el servicio:', error);
+      console.error('Error al iniciar sesión:', error);
     }
-  };
+  }
 
+  // Manejador de inicio de sesión para Microsoft
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
@@ -118,62 +110,25 @@ export default function LoginPage() {
     }, 5000);
   };
 
-  // METODOS PARA REALIZAX LA AUTENTICACION 
-
-  const [credentials, setCredentials] = useState({
-    correo: '',
-    contrasena: ''
-  });
-
-  const handleChange = (e: any) => {
-    setCredentials({
-      ...credentials,
-      [e.target.name]: e.target.value
-    });
-
-  }
-
-  const handleSubmit = async () => {
-    const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials)
-    });
-
-    console.log("Respuesta: ", response);
-
-
-    if (response.ok) {
-      // Lógica para obtener el rol del usuario desde el backend
-      const data = await response.json();
-      console.log("Respuesta del Servidor: ", data);
-
-
-      // Almacena el rol en la sesión
-      const role = data.rol_id;
-      const nombre = data.nombre;
-      const apellido = data.apellido;
-      const user_id = data.id;
-
-      // Guarda el rol en localStorage
-      localStorage.setItem('userRole', role);
-      localStorage.setItem('firstName', nombre);
-      localStorage.setItem('lastName', apellido);
-      localStorage.setItem('userId', user_id);
-
-      router.push('/dashboard');
-    }
-  }
-
+  useEffect(() => {
+    // Elimina los datos del usuario del almacenamiento local
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('lastName');
+  }, []);
 
   return (
     <>
-      <div className="flex justify-center items-center h-screen" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="bg-white p-5 rounded-5 text-secondary shadow rounded-lg" style={{ width: '25rem' }}>
-          <div className="flex justify-center">
-            <Image src="/logoUta.png" alt="login-icon" width={175} height={175} />
+      <div
+        className="flex justify-center items-center h-screen"
+        style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div
+          className="bg-white p-5 rounded-5 text-secondary shadow rounded-lg"
+          style={{ width: '25rem' }}>
+          <div
+            className="flex justify-center">
+            <Image src="/logoUta.png"
+              alt="login-icon" width={175} height={175} />
           </div>
 
           <div className="text-center text-2xl font-bold customcolor">Inicio de Sesión</div>
@@ -184,11 +139,8 @@ export default function LoginPage() {
               </div>
 
               <Input type="email" label="Email" radius="none" name='correo'
-                //value={correo} // Asocia el valor del estado 'correo' al campo de entrada
-                //onChange={(e) => setCorreo(e.target.value)}
                 onChange={handleChange}
               />
-
             </div>
 
           </div>
@@ -199,8 +151,6 @@ export default function LoginPage() {
               </div>
 
               <Input type="password" label="Contraseña" radius="none" name='contrasena'
-                //value={contrasena} // Asocia el valor del estado 'contrasena' al campo de entrada
-                //onChange={(e) => setContrasena(e.target.value)}
                 onChange={handleChange}
               />
 
@@ -217,9 +167,7 @@ export default function LoginPage() {
 
           {/* SECCION DE BOTONES */}
           <Button className="bg-custom-bg-color text-white w-full py-2 font-semibold mt-4 shadow-sm"
-            //onClick={handleLogin}
-            onClick={handleSubmit}
-          >
+            onClick={handleLogin}>
             Iniciar Sesión
           </Button>
 
@@ -234,7 +182,7 @@ export default function LoginPage() {
           </div>
 
           <Button className="bg-custom text-white w-full py-2 font-semibold mt-4 shadow-sm"
-            onClick={handleForm}
+          //onClick={handleForm}
           >
             <Image src="/Microsoft.svg" alt="google-icon" width={20} height={20} />
             Continuar con Microsoft
@@ -261,7 +209,7 @@ export default function LoginPage() {
               </svg>
               <span className="sr-only">Warning icon</span>
             </div>
-            <div className="ms-3 text-sm font-normal">{mensajeToast}.</div>
+            <div className="ms-3 text-sm font-normal">{mensajeToast}</div>
             <button
               type="button"
               className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -284,6 +232,7 @@ export default function LoginPage() {
         )}
     </>
 
-
   );
 }
+
+export default withAuth(LoginPage);
