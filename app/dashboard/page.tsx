@@ -1,22 +1,34 @@
 // app/dashboard/page.tsx
-
 "use client";
-import React, { useState, useEffect } from "react";
+
 import Image from "next/image";
 import '../dashboard/styles.css';
+import { withAuth } from "@/services/withAuth";
+import React, { useState, useEffect } from "react";
 
-export default function DashboardPage() {
+const DashboardPage = () => {
 	const [userRole, setUserRole] = useState<string | null>(null);
 	const [firstName, setFirstName] = useState<string | null>(null);
 	const [lastName, setLastName] = useState<string | null>(null);
 
+	const [nombreMicrosoft, setNombreMicrosoft] = useState<string | null>(null);
+	const [apellidoMicrosoft, setApellidoMicrosoft] = useState<string | null>(null);
+
 	useEffect(() => {
-		const role = localStorage.getItem('userRole');
+		// Obtiene el rol, nombre y apellido del usuario desde el almacenamiento local
+		const userRole = localStorage.getItem('userRole');
 		const firstName = localStorage.getItem('firstName');
 		const lastName = localStorage.getItem('lastName');
-		setUserRole(role);
+
+		const nombreMicrosoft = localStorage.getItem('nombreMicrosoft');
+		const apellidoMicrosoft = localStorage.getItem('apellidoMicrosoft');
+
+		// Actualiza los estados con la información del usuario
+		setUserRole(userRole);
 		setFirstName(firstName);
 		setLastName(lastName);
+		setNombreMicrosoft(nombreMicrosoft);
+		setApellidoMicrosoft(apellidoMicrosoft);
 	}, []);
 
 	return (
@@ -24,9 +36,22 @@ export default function DashboardPage() {
 			<div className=" justify-center items-center h-screen">
 				<div className="text-center">
 					<Image src="/logoUta.png" alt="username-icon" width={250} height={250} className="mx-auto" />
-					<h1 className="text-2xl mt-4">Bienvenido al sistema {firstName} {lastName}</h1>
+
+					{/* De acuerdo con el rol del usuario, se muestra un mensaje diferente. Normal y Microsoft */}
+					{
+						(nombreMicrosoft && apellidoMicrosoft) ? (
+							<h1 className="text-2xl mt-4">Bienvenido/a {nombreMicrosoft} {apellidoMicrosoft}</h1>
+						) : (
+							<h1 className="text-2xl mt-4">Bienvenido/a {firstName} {lastName}</h1>
+						)
+					}
+
 				</div>
 			</div>
+
 		</>
 	);
 }
+
+// Utiliza withAuth para proteger la página y requerir autenticación
+export default withAuth(DashboardPage);

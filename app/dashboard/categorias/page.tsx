@@ -1,12 +1,14 @@
 "use client";
 
 import '../styles.css';
+import { Toast } from '@/components/toast';
 import React, { useEffect, useState } from 'react';
+import { withAuth } from "@/services/withAuth";
 import { EditIcon } from '../administradores/EditIcon';
 import { DeleteIcon } from '../administradores/DeleteIcon';
-import { Toast } from '@/components/toast';
 
-export default function CategoriasPage() {
+
+const CategoriasPage = () => {
 
     // Datos
     const [carreras, setCarreras] = useState([]);
@@ -588,3 +590,4 @@ export default function CategoriasPage() {
         </>
     );
 }
+export default withAuth(CategoriasPage);

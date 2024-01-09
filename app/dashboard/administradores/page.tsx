@@ -1,11 +1,13 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import '../styles.css';
 import { EditIcon } from "./EditIcon";
 import { DeleteIcon } from "./DeleteIcon";
-import '../styles.css';
 import { Toast } from '@/components/toast';
+import React, { useEffect, useState } from 'react';
+import { withAuth } from "@/services/withAuth";
 
-export default function AdministradoresPage() {
+
+const AdministradoresPage = () => {
 
   const [administradores, setAdministradores] = useState([]);
   const [selectedAdministrador, setSelectedAdministrador] = useState(null);
@@ -747,3 +749,5 @@ export default function AdministradoresPage() {
     </>
   );
 }
+
+export default withAuth(AdministradoresPage);

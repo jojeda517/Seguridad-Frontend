@@ -4,8 +4,9 @@ import { Toast } from '@/components/toast';
 import React, { useEffect, useState } from 'react';
 import { EditIcon } from "@/app/dashboard/administradores/EditIcon";
 import { DeleteIcon } from "@/app/dashboard/administradores/DeleteIcon";
+import { withAuth } from "@/services/withAuth";
 
-export default function SecretariasPage() {
+const SecretariasPage = () => {
     const [administradores, setAdministradores] = useState([]);
     const [showFormulario, setShowFormulario] = useState(false);
     const [facultades, setFacultades] = useState([]);
@@ -750,3 +751,4 @@ export default function SecretariasPage() {
         </>
     );
 }
+export default withAuth(SecretariasPage);

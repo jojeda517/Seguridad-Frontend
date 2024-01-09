@@ -6,8 +6,10 @@ import { DeleteIcon } from "../../../administradores/DeleteIcon";
 import { DownloadIcon } from "../../../administradores/DownloadIcon";
 import "../../../facultades/styles.css";
 import { Toast } from "@/components/toast";
+import { withAuth } from "@/services/withAuth";
 
-export default function archivosPage() {
+
+const archivosPage = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [documentos, setDocumentos] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -46,24 +48,24 @@ export default function archivosPage() {
         const carrera_id = localStorage.getItem("carrera");
         const estudiante_id = localStorage.getItem("StudentId");
         const user_id = localStorage.getItem("userId");
-         // Modificado a 'selectedStudentId'
+        // Modificado a 'selectedStudentId'
         setuserId(user_id);
         setUserCarrera(carrera_id);
         setStudentId(estudiante_id);
-        
+
         const categoriaResponse = await fetch(
           `http://3.21.41.85/api/v1/categorias/${carrera_id}`
         );
-  
+
         if (categoriaResponse.ok) {
           const categoriaData = await categoriaResponse.json();
           setCategorias(categoriaData);
-  
+
           if (estudiante_id) { // Comprobación si 'estudiante_id' está definido
             const documentosResponse = await fetch(
               `http://3.21.41.85/api/v1/documento/${estudiante_id}/${categoriaData[0]?.id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
             );
-  
+
             if (documentosResponse.ok) {
               const documentosData = await documentosResponse.json();
               setDocumentos(documentosData);
@@ -78,10 +80,10 @@ export default function archivosPage() {
         console.error("Error:", error);
       }
     };
-  
+
     fetchEstudiantesAndCarreras();
   }, []);
-  
+
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,7 +112,7 @@ export default function archivosPage() {
       .then((response) => {
         if (response.ok) {
           setDocumentos((prevDocumentos) =>
-          prevDocumentos.filter((documentos) => documentos.id !== id)
+            prevDocumentos.filter((documentos) => documentos.id !== id)
           );
           mostrarMensajeToast("Estudiante eliminada");
         } else {
@@ -118,7 +120,7 @@ export default function archivosPage() {
         }
       })
       .catch((error) => console.error("Error deleting:", error));
-      //mostrarMensajeToast("Error al eliminar");
+    //mostrarMensajeToast("Error al eliminar");
   };
 
   const handleFormularioToggle = () => {
@@ -127,7 +129,7 @@ export default function archivosPage() {
 
   const handleInsert = (e) => {
     e.preventDefault();
-  
+
     fetch(`http://3.21.41.85/api/v1/documento/${userId}/${categorias[0]?.id}/${studentId}`, {
       method: "POST",
       headers: {
@@ -154,10 +156,10 @@ export default function archivosPage() {
         });
         setShowFormulario(false);
         mostrarMensajeToast("Estudiante Registrada");
-  
+
         const nuevoDocumentoId = data.result.id;
         console.log(nuevoDocumentoId);
-  
+
         const archivoFormData = new FormData();
         console.log(selectedFile);
         if (selectedFile) {
@@ -180,7 +182,7 @@ export default function archivosPage() {
         //mostrarMensajeToast("Error al Registrar");
       });
   };
-  
+
 
 
   const handleDownload = (documentoId) => {
@@ -206,8 +208,8 @@ export default function archivosPage() {
         mostrarMensajeToast('Error al descargar el archivo');
       });
   };
-  
-  
+
+
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -230,7 +232,7 @@ export default function archivosPage() {
     setShowFormulario(true);
   };
 
-  
+
 
 
 
@@ -250,7 +252,7 @@ export default function archivosPage() {
 
 
 
-  
+
 
   return (
     <>
@@ -281,25 +283,25 @@ export default function archivosPage() {
               <tr
                 key={documentos.id}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                
+
               >
                 <td className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4" // Establecer el tamaño del icono aquí
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                  />
-                </svg>
-                {documentos.nombre}
-              </td>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-4 h-4" // Establecer el tamaño del icono aquí
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                    />
+                  </svg>
+                  {documentos.nombre}
+                </td>
                 <td className="px-6 py-4">{documentos.descripcion}</td>
                 <td className="px-6 py-4">{documentos.fecha}</td>
 
@@ -317,7 +319,7 @@ export default function archivosPage() {
                   >
                     <DownloadIcon></DownloadIcon>
                   </a>
-                  
+
                 </td>
               </tr>
             ))}
@@ -330,11 +332,10 @@ export default function archivosPage() {
             <li key={index}>
               <a
                 href="#"
-                className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
-                  currentPage === index + 1
-                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    : ""
-                }`}
+                className={`flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${currentPage === index + 1
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+                  : ""
+                  }`}
                 onClick={() => handlePageChange(index + 1)}
                 style={{ marginTop: "8px" }}
               >
@@ -370,7 +371,7 @@ export default function archivosPage() {
           <span className="sr-only">New item</span>
         </button>
       </div>
-      
+
       {showFormulario && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           {/* ... */}
@@ -382,7 +383,7 @@ export default function archivosPage() {
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="nombre"
-                
+
               >
                 Nombre
               </label>
@@ -502,3 +503,4 @@ export default function archivosPage() {
     </>
   );
 }
+export default withAuth(archivosPage);
