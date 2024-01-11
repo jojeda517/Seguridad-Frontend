@@ -5,6 +5,7 @@ import { DeleteIcon } from "./DeleteIcon";
 import { Toast } from '@/components/toast';
 import React, { useEffect, useState } from 'react';
 import { withAuth } from "@/services/withAuth";
+import CryptoJS from 'crypto-js';
 
 
 const AdministradoresPage = () => {
@@ -17,6 +18,7 @@ const AdministradoresPage = () => {
 
   const [selectedFacultad, setSelectedFacultad] = useState('');
   const [filteredCarreras, setFilteredCarreras] = useState([]);
+  const clave = 'unaclavesecreta12345';
 
 
   const itemsPerPage = 8;
@@ -208,24 +210,27 @@ const AdministradoresPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
-    console.log(formData);
+    e.preventDefault();
+  
+    // Encripta la contraseña utilizando AES y una clave secreta (puedes cambiar la clave según tus necesidades)
+    const encryptedPassword = CryptoJS.AES.encrypt(formData.contrasena, clave).toString();
+  
     try {
       const response = await fetch('http://3.21.41.85/api/v1/usuario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-
-        body: JSON.stringify(formData), // Envía los datos del formulario
+        body: JSON.stringify({
+          ...formData,
+          contrasena: encryptedPassword,
+        }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to register administrator');
-
       }
       fetchUserData();
-
       setFormData({
         id: '0',
         nombre: '',
@@ -236,10 +241,11 @@ const AdministradoresPage = () => {
         facultad_id: '',
         carrera_id: '',
       });
-
-      // Opción: puedes cerrar el formulario después del registro exitoso
+  
+      // Cierra el formulario después de la inserción exitosa
       setShowFormulario(false);
-      mostrarMensajeToast('Registro exitoso');
+      // Resto del código
+      mostrarMensajeToast('!!Administrador registrado');
     } catch (error) {
       console.error('Error al registrar administrador:', error);
       mostrarMensajeToast('Error al registrar');
@@ -280,34 +286,40 @@ const AdministradoresPage = () => {
   };
 
   const handleEdit = (administrador) => {
-    setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
-    setShowFormulario(true); // Muestra el formulario para editar
+    // Descifrar la contraseña antes de mostrarla en el formulario
+    const decryptedPassword = CryptoJS.AES.decrypt(administrador.contrasena, clave).toString(CryptoJS.enc.Utf8);
+  
+    setSelectedAdministrador({
+      ...administrador,
+      contrasena: decryptedPassword,
+    });
+    setShowFormulario(true);
+    // Resto del código...
   };
 
   const handleUpdate = async (e, adminId) => {
     e.preventDefault();
-
+  
+    // Cifrar la contraseña antes de enviarla para la actualización
+    const encryptedPassword = CryptoJS.AES.encrypt(selectedAdministrador.contrasena, clave).toString();
+  
     try {
       const response = await fetch(`http://3.21.41.85/api/v1/usuario/${adminId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(selectedAdministrador),
+        body: JSON.stringify({
+          ...selectedAdministrador,
+          contrasena: encryptedPassword,
+        }),
       });
+  
+        fetchUserData();
 
-      if (!response.ok) {
-        throw new Error('Failed to update administrator');
-      }
-
-      // Realizar alguna acción adicional después de la actualización, si es necesario
-
-      // Por ejemplo, puedes volver a cargar los datos de los administradores:
-      fetchUserData();
-
-      // Cerrar el formulario después de la actualización exitosa
-      setShowFormulario(false);
-      mostrarMensajeToast('Administrador Actualizado');
+        // Cerrar el formulario después de la actualización exitosa
+        setShowFormulario(false);
+        mostrarMensajeToast('Administrador Actualizado');
     } catch (error) {
       console.error('Error al actualizar administrador:', error);
       mostrarMensajeToast('Error al actualizar');

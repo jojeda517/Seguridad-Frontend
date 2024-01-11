@@ -1,4 +1,7 @@
 // service/authService.js
+const CryptoJS = require('crypto-js');
+
+const clave = 'unaclavesecreta12345';
 
 // Función para manejar la respuesta de la solicitud
 const handleResponse = async (response) => {
@@ -12,6 +15,7 @@ const handleResponse = async (response) => {
 // Función para realizar la solicitud de inicio de sesión
 export const login = async (credenciales) => {
     try {
+        console.log(credenciales);
         // Realiza la solicitud POST al endpoint de inicio de sesión
         const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
             method: 'POST',
@@ -32,6 +36,8 @@ export const login = async (credenciales) => {
 export const loginMicrosoft = async (credenciales) => {
     try {
         // Realiza la solicitud POST al endpoint de inicio de sesión
+        
+
         const response = await fetch('http://3.21.41.85/api/v1/usuario/login/microsoft', {
             method: 'POST',
             headers: {
@@ -47,3 +53,49 @@ export const loginMicrosoft = async (credenciales) => {
         console.log('Error al iniciar sesión', error);
     }
 }
+
+export const login1 = async (credentials) => {
+    try {
+      // Obtén el usuario de la base de datos utilizando el correo proporcionado
+
+        console.log(credentials);
+        const claveencriptada = credentials.contrasena
+        console.log(claveencriptada);
+        const encriptadoclave = CryptoJS.AES.encrypt(claveencriptada, clave).toString();
+        console.log(encriptadoclave);
+
+      const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+  
+      const userData = await response.json();
+      console.log(userData);
+  
+      // Verifica si el usuario existe y si la contraseña coincide
+      if (userData && checkPassword(credentials.contrasena, userData.contrasena)) {
+        return userData;
+      } else {
+        return null; // Usuario no encontrado o contraseña incorrecta
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      throw error;
+    }
+  };
+  
+  // Función para comparar contraseñas encriptadas
+  const checkPassword = (inputPassword, storedPassword) => {
+    // Decifra la contraseña almacenada antes de compararla
+    const decryptedPassword = CryptoJS.AES.decrypt(storedPassword, clave).toString(CryptoJS.enc.Utf8);
+    
+    // Compara la contraseña ingresada con la contraseña almacenada
+    return inputPassword === decryptedPassword;
+  };

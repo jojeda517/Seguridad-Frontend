@@ -7,9 +7,10 @@ import { Input } from "@nextui-org/input";
 import { useRouter } from 'next/navigation'
 import { Button } from "@nextui-org/button";
 import { withAuth } from '@/services/withAuth';
-import { login, loginMicrosoft } from '@/services/authService';
+import { login, login1, loginMicrosoft } from '@/services/authService';
 import React, { useEffect, useState } from "react";
 import signInWithMicrosoft from "../../firebase/Auth/singin";
+import CryptoJS from 'crypto-js';
 
 
 const LoginPage = () => {
@@ -18,6 +19,8 @@ const LoginPage = () => {
     correo: '',
     contrasena: ''
   });
+
+  const clave = 'unaclavesecreta12345';
 
   // Manejador de cambios en los campos de entrada
   const handleChange = (e: any) => {
@@ -31,7 +34,10 @@ const LoginPage = () => {
   const handleLogin = async () => {
     try {
       // Intenta iniciar sesión
-      const user = await login(credentials);
+      const user = await login1(credentials);
+
+      console.log(user);
+      
 
       // Si las credenciales son correctas, redirige al dashboard
       if (user != null) {
@@ -50,6 +56,11 @@ const LoginPage = () => {
       console.error('Error al iniciar sesión:', error);
     }
   }
+
+
+  
+
+
 
   // Manejador de inicio de sesión para Microsoft
   const handleForm = async (event: { preventDefault: () => void }) => {
