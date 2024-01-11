@@ -3,7 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { EditIcon } from "../administradores/EditIcon";
 import { DeleteIcon } from "../administradores/DeleteIcon";
+
+import CryptoJS from 'crypto-js';
+//import {cipher_suite} from 'crypto-js/cipher-core';
 import "../facultades/styles.css";
+//import { Key, Fernet } from 'fernet';
+import * as fernet from 'fernet';
 import { Toast } from "@/components/toast";
 
 export default function estudiantesPage() {
@@ -21,6 +26,7 @@ export default function estudiantesPage() {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [selectedFile, setSelectedFile] = useState(new File([], 'default.txt'));
+  const clave = 'unaclavesecreta12345';
 
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -43,41 +49,69 @@ export default function estudiantesPage() {
         const carrera_id = localStorage.getItem("carrera");
         console.log(carrera_id);
         setUserCarrera(carrera_id);
-
+  
         const estudiantesResponse = await fetch(
           `http://3.21.41.85/api/v1/estudiantes/${carrera_id}`
         );
+  
         if (estudiantesResponse.ok) {
           const estudiantesData = await estudiantesResponse.json();
-          setEstudiantes(estudiantesData);
+  
+          // Desencriptar cada campo encriptado de los estudiantes
+          const estudiantesDesencriptados = estudiantesData.map((estudiante) => {
+            // Desencriptar cada campo utilizando CryptoJS
+            const {
+              id,
+              apellido,
+              cedula,
+              celular,
+              correo,
+              direccion,
+              nombre,
+              // ... otros campos encriptados que necesites desencriptar
+            } = estudiante;
+  
+            const campoDesencriptado_1 = CryptoJS.AES.decrypt(apellido, clave).toString(CryptoJS.enc.Utf8);
+            const campoDesencriptado_2 = CryptoJS.AES.decrypt(cedula, clave).toString(CryptoJS.enc.Utf8);
+            const campoDesencriptado_3 = CryptoJS.AES.decrypt(celular, clave).toString(CryptoJS.enc.Utf8);
+            const campoDesencriptado_4 = CryptoJS.AES.decrypt(correo, clave).toString(CryptoJS.enc.Utf8);
+            const campoDesencriptado_5 = CryptoJS.AES.decrypt(direccion, clave).toString(CryptoJS.enc.Utf8);
+            const campoDesencriptado_6 = CryptoJS.AES.decrypt(nombre, clave).toString(CryptoJS.enc.Utf8);
+            console.log(campoDesencriptado_6);
+  
+            // ... desencriptar otros campos según sea necesario
+  
+            return {
+              ...estudiante,
+              apellido: campoDesencriptado_1,
+              cedula: campoDesencriptado_2,
+              celular: campoDesencriptado_3,
+              correo: campoDesencriptado_4,
+              direccion: campoDesencriptado_5,
+              nombre: campoDesencriptado_6,
+              // ... asignar los otros campos desencriptados a las propiedades correspondientes
+            };
+          });
+          console.log(estudiantesDesencriptados);
+          setEstudiantes(estudiantesDesencriptados);
+          console.log(estudiantes);
         } else {
           throw new Error("Error fetching estudiantes");
         }
-
-        const carrerasResponse = await fetch(
-          `http://3.21.41.85/api/v1/carrera/${carrera_id}`
-        );
-        if (carrerasResponse.ok) {
-          const carrerasData = await carrerasResponse.json();
-          setCarreras(carrerasData);
-
-          if (carrerasData.length > 0) {
-            const firstCarreraId = carrerasData[0].id;
-            setFormData((prevFormData) => ({
-              ...prevFormData,
-              carrera_id: firstCarreraId,
-            }));
-          }
-        } else {
-          throw new Error("Error fetching carreras");
-        }
+  
+        // Resto del código para carreras...
+  
       } catch (error) {
         console.error("Error:", error);
       }
     };
-
+  
     fetchEstudiantesAndCarreras();
   }, []);
+  
+  
+  
+  
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [currentPage, setCurrentPage] = useState(1);
@@ -127,17 +161,28 @@ export default function estudiantesPage() {
 
   const handleInsert = (e) => {
     e.preventDefault();
-
+  
+    // Encriptar los campos necesarios con CryptoJS
+    const encryptedFormData = {
+      id: formData.id,
+      nombre: CryptoJS.AES.encrypt(formData.nombre, clave).toString(),
+      apellido: CryptoJS.AES.encrypt(formData.apellido, clave).toString(),
+      cedula: CryptoJS.AES.encrypt(formData.cedula, clave).toString(),
+      correo: CryptoJS.AES.encrypt(formData.correo, clave).toString(),
+      direccion: CryptoJS.AES.encrypt(formData.direccion, clave).toString(),
+      celular: CryptoJS.AES.encrypt(formData.celular, clave).toString(),
+    };
+  
     fetch(`http://3.21.41.85/api/v1/estudiante/${userCarrera}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(encryptedFormData),
     })
       .then((response) => response.json())
       .then((data) => {
-        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]); // Actualiza el estado con los datos recibidos del servidor
+        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]);
         setFormData({
           id: "0",
           nombre: "",
@@ -150,9 +195,12 @@ export default function estudiantesPage() {
         setShowFormulario(false);
         mostrarMensajeToast("Estudiante Registrada");
       })
-      .catch((error) => console.error("Error inserting data:", error));
-    mostrarMensajeToast("Error al Registrar");
+      .catch((error) => {
+        console.error("Error inserting data:", error);
+        mostrarMensajeToast("Error al Registrar");
+      });
   };
+  
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -182,24 +230,46 @@ export default function estudiantesPage() {
 
   const handleUpdate = (e, id) => {
     e.preventDefault();
-
+  
+    // Encrypt the fields before sending the update request
+    const encryptedUpdateData = {
+      ...selectedEstudiantes,
+      nombre: CryptoJS.AES.encrypt(selectedEstudiantes.nombre, clave).toString(),
+      apellido: CryptoJS.AES.encrypt(selectedEstudiantes.apellido, clave).toString(),
+      cedula: CryptoJS.AES.encrypt(selectedEstudiantes.cedula, clave).toString(),
+      correo: CryptoJS.AES.encrypt(selectedEstudiantes.correo, clave).toString(),
+      direccion: CryptoJS.AES.encrypt(selectedEstudiantes.direccion, clave).toString(),
+      celular: CryptoJS.AES.encrypt(selectedEstudiantes.celular, clave).toString(),
+    };
+  
     fetch(`http://3.21.41.85/api/v1/estudiante/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(selectedEstudiantes),
+      body: JSON.stringify(encryptedUpdateData),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "success" && data.result) {
+          // Decrypt the updated data
+          const decryptedUpdatedData = {
+            ...data.result,
+            nombre: CryptoJS.AES.decrypt(data.result.nombre, clave).toString(CryptoJS.enc.Utf8),
+            apellido: CryptoJS.AES.decrypt(data.result.apellido, clave).toString(CryptoJS.enc.Utf8),
+            cedula: CryptoJS.AES.decrypt(data.result.cedula, clave).toString(CryptoJS.enc.Utf8),
+            correo: CryptoJS.AES.decrypt(data.result.correo, clave).toString(CryptoJS.enc.Utf8),
+            direccion: CryptoJS.AES.decrypt(data.result.direccion, clave).toString(CryptoJS.enc.Utf8),
+            celular: CryptoJS.AES.decrypt(data.result.celular, clave).toString(CryptoJS.enc.Utf8),
+          };
+  
+          // Update the estudiantes state with the decrypted data
           setEstudiantes((prevEstudiantes) =>
             prevEstudiantes.map((estudiante) =>
-              estudiante.id === id
-                ? { ...estudiante, ...data.result }
-                : estudiante
+              estudiante.id === id ? decryptedUpdatedData : estudiante
             )
           );
+  
           mostrarMensajeToast("Estudiante actualizado");
         } else {
           console.error("Error en la edición:", data.message);
@@ -208,10 +278,9 @@ export default function estudiantesPage() {
       })
       .catch((error) => console.error("Error updating data:", error))
       .finally(() => {
-        setShowFormulario(false); // Cierra el formulario después de la edición
+        setShowFormulario(false); // Close the form after editing
       });
   };
-  // ... (resto del código)
 
   const [mostrarToast, setMostrarToast] = useState(false);
   const [mensajeToast, setMensajeToast] = useState("");

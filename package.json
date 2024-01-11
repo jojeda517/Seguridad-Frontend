@@ -27,8 +27,10 @@
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.16",
     "clsx": "^2.0.0",
+    "crypto-js": "^4.2.0",
     "eslint": "8.48.0",
     "eslint-config-next": "14.0.2",
+    "fernet": "^0.4.0",
     "firebase": "^10.7.1",
     "framer-motion": "^10.16.4",
     "intl-messageformat": "^10.5.0",
@@ -43,6 +45,8 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.1",
+    "@types/fernet": "^0.4.3",
     "next": "^14.0.4"
   }
 }
