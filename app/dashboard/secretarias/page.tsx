@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { EditIcon } from "@/app/dashboard/administradores/EditIcon";
 import { DeleteIcon } from "@/app/dashboard/administradores/DeleteIcon";
 import { withAuth } from "@/services/withAuth";
+import CryptoJS from 'crypto-js';
 
 const SecretariasPage = () => {
     const [administradores, setAdministradores] = useState([]);
@@ -12,6 +13,7 @@ const SecretariasPage = () => {
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [selectedFacultad, setSelectedFacultad] = useState('');
+    const clave = 'unaclavesecreta12345';
 
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -204,51 +206,48 @@ const SecretariasPage = () => {
 
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
-        console.log(formData);
+        e.preventDefault();
+      
+        // Encripta la contraseña utilizando AES y una clave secreta (puedes cambiar la clave según tus necesidades)
+        const encryptedPassword = CryptoJS.AES.encrypt(formData.contrasena, clave).toString();
+      
         try {
-            const response = await fetch('http://3.21.41.85/api/v1/usuario', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-
-                body: JSON.stringify(formData), // Envía los datos del formulario
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to register administrator');
-
-            }
-
-            // El administrador se ha registrado exitosamente
-            // Puedes realizar alguna acción adicional aquí, como actualizar la lista de administradores, limpiar el formulario, etc.
-
-            // Por ejemplo, después de registrar, podrías recargar la lista de administradores:
-            fetchUserData();
-            // Esta función debe ser definida para volver a cargar los datos después de registrar un nuevo administrador
-
-            // Limpia el formulario después del registro exitoso
-            setFormData({
-                id: '0',
-                nombre: '',
-                apellido: '',
-                correo: '',
-                rol_id: '1',
-                contrasena: '',
-                facultad_id: '',
-                carrera_id: '',
-            });
-
-            // Opción: puedes cerrar el formulario después del registro exitoso
-            setShowFormulario(false);
-            mostrarMensajeToast('Registro exitoso');
+          const response = await fetch('http://3.21.41.85/api/v1/usuario', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ...formData,
+              contrasena: encryptedPassword,
+            }),
+          });
+      
+          if (!response.ok) {
+            throw new Error('Failed to register administrator');
+          }
+          fetchUserData();
+          setFormData({
+            id: '0',
+            nombre: '',
+            apellido: '',
+            correo: '',
+            rol_id: '1',
+            contrasena: '',
+            facultad_id: '',
+            carrera_id: '',
+          });
+      
+          // Cierra el formulario después de la inserción exitosa
+          setShowFormulario(false);
+          // Resto del código
+          mostrarMensajeToast('!!Secretario registrado');
         } catch (error) {
-            console.error('Error al registrar administrador:', error);
-            mostrarMensajeToast('Error al registrar');
-            // Manejar el error, mostrar un mensaje de error, etc.
+          console.error('Error al registrar administrador:', error);
+          mostrarMensajeToast('Error al registrar');
+          // Manejar el error, mostrar un mensaje de error, etc.
         }
-    };
+      };
 
 
     const handleSelectChange = (event) => {
@@ -284,41 +283,52 @@ const SecretariasPage = () => {
     };
 
 
+
     const handleEdit = (administrador) => {
-        setSelectedAdministrador(administrador); // Guarda el administrador seleccionado en el estado
-        setShowFormulario(true); // Muestra el formulario para editar
-    };
+        // Descifrar la contraseña antes de mostrarla en el formulario
+        const decryptedPassword = CryptoJS.AES.decrypt(administrador.contrasena, clave).toString(CryptoJS.enc.Utf8);
+      
+        setSelectedAdministrador({
+          ...administrador,
+          contrasena: decryptedPassword,
+        });
+        setShowFormulario(true);
+        // Resto del código...
+      };
 
-    const handleUpdate = async (e, adminId) => {
+
+      const handleUpdate = async (e, adminId) => {
         e.preventDefault();
-
+      
+        // Cifrar la contraseña antes de enviarla para la actualización
+        const encryptedPassword = CryptoJS.AES.encrypt(selectedAdministrador.contrasena, clave).toString();
+      
         try {
-            const response = await fetch(`http://3.21.41.85/api/v1/usuario/${adminId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(selectedAdministrador),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update administrator');
-            }
-
-            // Realizar alguna acción adicional después de la actualización, si es necesario
-
-            // Por ejemplo, puedes volver a cargar los datos de los administradores:
+          const response = await fetch(`http://3.21.41.85/api/v1/usuario/${adminId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ...selectedAdministrador,
+              contrasena: encryptedPassword,
+            }),
+          });
+      
             fetchUserData();
 
             // Cerrar el formulario después de la actualización exitosa
             setShowFormulario(false);
             mostrarMensajeToast('Administrador Actualizado');
         } catch (error) {
-            console.error('Error al actualizar administrador:', error);
-            mostrarMensajeToast('Error al actualizar');
-            // Manejar el error, mostrar un mensaje de error, etc.
+          console.error('Error al actualizar administrador:', error);
+          mostrarMensajeToast('Error al actualizar');
+          // Manejar el error, mostrar un mensaje de error, etc.
         }
-    };
+      };
+
+      
+    
 
     const handleFacultadUpdateChange = (event) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
