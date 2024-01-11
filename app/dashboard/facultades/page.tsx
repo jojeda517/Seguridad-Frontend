@@ -16,11 +16,14 @@ const facultadesPage = () => {
   const [formData, setFormData] = useState({
     id: '0',
     nombre: '',
-    logo: '',
+    logo: '', // Cambiado a un objeto File
     sigla: '',
   });
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [selectedFacultad, setSelectedFacultad] = useState(null);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [selectedFile, setSelectedFile] = useState(new File([], 'default.txt'));
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
@@ -33,7 +36,7 @@ const facultadesPage = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 5;
 
   const totalPages = Math.ceil(facultades.length / itemsPerPage);
 
@@ -73,27 +76,66 @@ const facultadesPage = () => {
     setSelectedFacultad(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
   };
 
-
   const handleInsert = (e) => {
     e.preventDefault();
-
+  
+    // Paso 1: Crear la facultad
     fetch('http://3.21.41.85/api/v1/facultad', {
       method: 'POST',
+      body: JSON.stringify(formData),
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formData),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Failed to register faculty');
+      })
       .then((data) => {
-        setFacultades((prevFacultades) => [...prevFacultades, data.result]); // Actualiza el estado con los datos recibidos del servidor
-        setFormData({ nombre: '', logo: '', sigla: '' });
+        const nuevaFacultadId = data.result.id;
+  
+        // Paso 2: Subir el archivo de la facultad si hay un archivo seleccionado
+        const archivoFormData = new FormData();
+        if (selectedFile) {
+          archivoFormData.append('file', selectedFile);
+          return fetch(`http://3.21.41.85/api/v1/logo/${nuevaFacultadId}`, {
+            method: 'POST',
+            body: archivoFormData,
+          });
+        }
+        return Promise.resolve(); // No hay archivo para subir, resolvemos la promesa
+      })
+      .then((archivoResponse) => {
+        if (archivoResponse && !archivoResponse.ok) {
+          throw new Error('Failed to upload faculty file');
+        }
+  
+        // Paso 3: Actualizar el estado y mostrar el mensaje de éxito
+        // Se puede mejorar asegurándote de que tienes la última versión de los datos antes de actualizar el estado
+        fetch('http://3.21.41.85/api/v1/facultad')
+          .then((response) => response.json())
+          .then((data) => setFacultades(data))
+          .catch((error) => console.error('Error fetching data:', error));
+  
+        setFormData({
+          id: '0',
+          nombre: '',
+          logo: '',
+          sigla: '',
+        });
         setShowFormulario(false);
         mostrarMensajeToast('Facultad Registrada');
       })
-      .catch((error) => console.error('Error inserting data:', error));
-    mostrarMensajeToast('Error al Registrar');
+      .catch((error) => {
+        console.error('Error inserting faculty data:', error);
+        //mostrarMensajeToast('Error al Registrar');
+      });
   };
+  
+  
+  
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -118,7 +160,7 @@ const facultadesPage = () => {
 
   const handleUpdate = (e, id) => {
     e.preventDefault();
-
+  
     fetch(`http://3.21.41.85/api/v1/facultad/${id}`, {
       method: 'PUT',
       headers: {
@@ -145,6 +187,10 @@ const facultadesPage = () => {
         setShowFormulario(false); // Cierra el formulario después de la edición
       });
   };
+
+  
+  
+  
   // ... (resto del código)
 
   const [mostrarToast, setMostrarToast] = useState(false);
@@ -159,6 +205,12 @@ const facultadesPage = () => {
       setMostrarToast(false);
     }, 5000);
   };
+
+  const handleFileChange = (event) => {
+    console.log(event.target.files[0]);
+    setSelectedFile(event.target.files[0]);
+  };
+  
 
 
 
@@ -199,12 +251,13 @@ const facultadesPage = () => {
                   {facultad.nombre}
                 </td>
                 <td className="px-6 py-4">
-                  {facultad.logo}
+                  {/* Mostrar la imagen del logo */}
+                  {facultad.logo && <img src={`http://3.21.41.85/api/v1/logo/${facultad.id}`} alt="Logo de la facultad" className="w-16 h-16 object-cover rounded-full" />}
                 </td>
                 <td className="px-6 py-4">
                   {facultad.sigla}
                 </td>
-                <td className="flex items-center px-6 py-4">
+                <td className="flex items-center px-6 py-4 ">
                   <a
                     href="#"
                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -297,12 +350,10 @@ const facultadesPage = () => {
                   Logo
                 </label>
                 <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'logo')}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  id="logo"
-                  type="text"
-                  placeholder="Ingrese la URL del logo"
-                  value={formData.logo}
-                  onChange={handleInputChange}
                 />
               </div>
               <div className="mb-6">
@@ -340,10 +391,10 @@ const facultadesPage = () => {
       {showFormulario && selectedFacultad && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <form
-            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
+            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-6 w-full max-w-md"
             onSubmit={(e) => handleUpdate(e, selectedFacultad.id)}
           >
-            <div className="mb-4">
+            <div className="mb-12">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
                 Nombre
               </label>
@@ -356,20 +407,8 @@ const facultadesPage = () => {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="logo">
-                Logo
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="logo"
-                type="text"
-                placeholder="Ingrese la URL del logo"
-                value={selectedFacultad ? selectedFacultad.logo : ''}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="mb-6">
+            
+            <div className="mb-12">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sigla">
                 Sigla
               </label>
@@ -382,7 +421,7 @@ const facultadesPage = () => {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-8">
               <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 onClick={handleFormularioToggle}

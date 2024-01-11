@@ -224,15 +224,8 @@ const AdministradoresPage = () => {
         throw new Error('Failed to register administrator');
 
       }
-
-      // El administrador se ha registrado exitosamente
-      // Puedes realizar alguna acción adicional aquí, como actualizar la lista de administradores, limpiar el formulario, etc.
-
-      // Por ejemplo, después de registrar, podrías recargar la lista de administradores:
       fetchUserData();
-      // Esta función debe ser definida para volver a cargar los datos después de registrar un nuevo administrador
 
-      // Limpia el formulario después del registro exitoso
       setFormData({
         id: '0',
         nombre: '',
