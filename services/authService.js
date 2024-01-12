@@ -59,17 +59,17 @@ export const login1 = async (credentials) => {
       // Obtén el usuario de la base de datos utilizando el correo proporcionado
 
         console.log(credentials);
-        const claveencriptada = credentials.contrasena
-        console.log(claveencriptada);
-        const encriptadoclave = CryptoJS.AES.encrypt(claveencriptada, clave).toString();
-        console.log(encriptadoclave);
+        const email={correo: credentials.correo } 
+        console.log(email);
+        //const encriptadoclave = CryptoJS.AES.encrypt(claveencriptada, clave).toString();
+        //console.log(encriptadoclave);
 
       const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(email),
       });
   
       if (!response.ok) {
@@ -78,6 +78,8 @@ export const login1 = async (credentials) => {
   
       const userData = await response.json();
       console.log(userData);
+      console.log('formulario',credentials.contrasena);
+      console.log('json',userData.contrasena);
   
       // Verifica si el usuario existe y si la contraseña coincide
       if (userData && checkPassword(credentials.contrasena, userData.contrasena)) {
