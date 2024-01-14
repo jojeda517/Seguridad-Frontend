@@ -54,9 +54,9 @@ export default function estudiantesPage() {
         if (estudiantesResponse.ok) {
           const estudiantesData = await estudiantesResponse.json();
   
-          // Desencriptar cada campo encriptado de los estudiantes
+          //console.log(estudiantesData.cedula);
+  
           const estudiantesDesencriptados = estudiantesData.map((estudiante) => {
-            // Desencriptar cada campo utilizando CryptoJS
             const {
               id,
               apellido,
@@ -68,36 +68,133 @@ export default function estudiantesPage() {
               // ... otros campos encriptados que necesites desencriptar
             } = estudiante;
   
-            const campoDesencriptado_1 = CryptoJS.AES.decrypt(apellido, clave).toString(CryptoJS.enc.Utf8);
-            const campoDesencriptado_2 = CryptoJS.AES.decrypt(cedula, clave).toString(CryptoJS.enc.Utf8);
-            const campoDesencriptado_3 = CryptoJS.AES.decrypt(celular, clave).toString(CryptoJS.enc.Utf8);
-            const campoDesencriptado_4 = CryptoJS.AES.decrypt(correo, clave).toString(CryptoJS.enc.Utf8);
-            const campoDesencriptado_5 = CryptoJS.AES.decrypt(direccion, clave).toString(CryptoJS.enc.Utf8);
-            const campoDesencriptado_6 = CryptoJS.AES.decrypt(nombre, clave).toString(CryptoJS.enc.Utf8);
-            console.log(campoDesencriptado_6);
+            if (cedula.length <= 10) {
+              // Encriptar la información del estudiante si la longitud de la cédula es menor o igual a 10
+              const campoEncriptado_1 = CryptoJS.AES.encrypt(apellido, clave).toString();
+              const campoEncriptado_2 = CryptoJS.AES.encrypt(cedula, clave).toString();
+              const campoEncriptado_3 = CryptoJS.AES.encrypt(celular, clave).toString();
+              const campoEncriptado_4 = CryptoJS.AES.encrypt(correo, clave).toString();
+              const campoEncriptado_5 = CryptoJS.AES.encrypt(direccion, clave).toString();
+              const campoEncriptado_6 = CryptoJS.AES.encrypt(nombre, clave).toString();
   
-            // ... desencriptar otros campos según sea necesario
+              // ... encriptar otros campos según sea necesario
   
-            return {
-              ...estudiante,
-              apellido: campoDesencriptado_1,
-              cedula: campoDesencriptado_2,
-              celular: campoDesencriptado_3,
-              correo: campoDesencriptado_4,
-              direccion: campoDesencriptado_5,
-              nombre: campoDesencriptado_6,
-              // ... asignar los otros campos desencriptados a las propiedades correspondientes
-            };
-          });
-          console.log(estudiantesDesencriptados);
-          setEstudiantes(estudiantesDesencriptados);
-          console.log(estudiantes);
+              // Enviar la solicitud PUT con los datos encriptados
+              fetch(`http://3.144.231.126/api/v1/estudiante/${id}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  apellido: campoEncriptado_1,
+                  cedula: campoEncriptado_2,
+                  celular: campoEncriptado_3,
+                  correo: campoEncriptado_4,
+                  direccion: campoEncriptado_5,
+                  nombre: campoEncriptado_6,
+                  id:id,
+                  // ... otros campos encriptados que necesites enviar
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  // Procesar la respuesta si es necesario
+                  const decryptedUpdatedData = {
+                    ...data.result,
+                    nombre: CryptoJS.AES.decrypt(data.result.nombre, clave).toString(CryptoJS.enc.Utf8),
+                    apellido: CryptoJS.AES.decrypt(data.result.apellido, clave).toString(CryptoJS.enc.Utf8),
+                    cedula: CryptoJS.AES.decrypt(data.result.cedula, clave).toString(CryptoJS.enc.Utf8),
+                    correo: CryptoJS.AES.decrypt(data.result.correo, clave).toString(CryptoJS.enc.Utf8),
+                    direccion: CryptoJS.AES.decrypt(data.result.direccion, clave).toString(CryptoJS.enc.Utf8),
+                    celular: CryptoJS.AES.decrypt(data.result.celular, clave).toString(CryptoJS.enc.Utf8),
+                  };
+          
+                  // Update the estudiantes state with the decrypted data
+                  setEstudiantes((prevEstudiantes) =>
+                    prevEstudiantes.map((estudiante) =>
+                      estudiante.id === id ? decryptedUpdatedData : estudiante
+                    )
+                  );
+                  console.log("Datos actualizados:", data);
+                })
+                .catch((error) => console.error("Error al actualizar datos:", error));
+            } else {
+              // Desencriptar la información del estudiante si la longitud de la cédula es mayor a 10
+              const campoDesencriptado_1 = CryptoJS.AES.decrypt(apellido, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_2 = CryptoJS.AES.decrypt(cedula, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_3 = CryptoJS.AES.decrypt(celular, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_4 = CryptoJS.AES.decrypt(correo, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_5 = CryptoJS.AES.decrypt(direccion, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_6 = CryptoJS.AES.decrypt(nombre, clave).toString(CryptoJS.enc.Utf8);
+  
+              // ... desencriptar otros campos según sea necesario
+  
+              return {
+                ...estudiante,
+                apellido: campoDesencriptado_1,
+                cedula: campoDesencriptado_2,
+                celular: campoDesencriptado_3,
+                correo: campoDesencriptado_4,
+                direccion: campoDesencriptado_5,
+                nombre: campoDesencriptado_6,
+                // ... asignar los otros campos desencriptados a las propiedades correspondientes
+              };
+            }
+          }).filter(Boolean);
+
+          const estudiantesResponseNueva = await fetch(
+            `http://3.144.231.126/api/v1/estudiantes/${carrera_id}`
+          );
+          
+          if (estudiantesResponseNueva.ok) {
+            const estudiantesDataNueva = await estudiantesResponseNueva.json();
+          
+            const estudiantesDesencriptadosNueva = estudiantesDataNueva.map((estudiante) => {
+              const {
+                id,
+                apellido,
+                cedula,
+                celular,
+                correo,
+                direccion,
+                nombre,
+                // ... otros campos encriptados que necesites desencriptar
+              } = estudiante;
+          
+              // Desencriptar la información del estudiante
+              const campoDesencriptado_1 = CryptoJS.AES.decrypt(apellido, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_2 = CryptoJS.AES.decrypt(cedula, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_3 = CryptoJS.AES.decrypt(celular, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_4 = CryptoJS.AES.decrypt(correo, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_5 = CryptoJS.AES.decrypt(direccion, clave).toString(CryptoJS.enc.Utf8);
+              const campoDesencriptado_6 = CryptoJS.AES.decrypt(nombre, clave).toString(CryptoJS.enc.Utf8);
+          
+              return {
+                ...estudiante,
+                apellido: campoDesencriptado_1,
+                cedula: campoDesencriptado_2,
+                celular: campoDesencriptado_3,
+                correo: campoDesencriptado_4,
+                direccion: campoDesencriptado_5,
+                nombre: campoDesencriptado_6,
+                // ... asignar los otros campos desencriptados a las propiedades correspondientes
+              };
+            });
+          
+            setEstudiantes(estudiantesDesencriptadosNueva);
+          } else {
+            throw new Error("Error fetching estudiantes");
+          }
+  
+          //console.log(estudiantesDesencriptados);
+          //setEstudiantes(estudiantesDesencriptados);
+          //console.log(estudiantes);
+  
+          // Resto del código para carreras...
+  
         } else {
           throw new Error("Error fetching estudiantes");
         }
-  
-        // Resto del código para carreras...
-  
       } catch (error) {
         console.error("Error:", error);
       }
@@ -179,7 +276,18 @@ export default function estudiantesPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, data.result]);
+        const decryptedUpdatedData = {
+          ...data.result,
+          nombre: CryptoJS.AES.decrypt(data.result.nombre, clave).toString(CryptoJS.enc.Utf8),
+          apellido: CryptoJS.AES.decrypt(data.result.apellido, clave).toString(CryptoJS.enc.Utf8),
+          cedula: CryptoJS.AES.decrypt(data.result.cedula, clave).toString(CryptoJS.enc.Utf8),
+          correo: CryptoJS.AES.decrypt(data.result.correo, clave).toString(CryptoJS.enc.Utf8),
+          direccion: CryptoJS.AES.decrypt(data.result.direccion, clave).toString(CryptoJS.enc.Utf8),
+          celular: CryptoJS.AES.decrypt(data.result.celular, clave).toString(CryptoJS.enc.Utf8),
+        };
+
+        // Update the estudiantes state with the decrypted data
+        setEstudiantes((prevEstudiantes) => [...prevEstudiantes, decryptedUpdatedData]);
         setFormData({
           id: "0",
           nombre: "",
