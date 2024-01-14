@@ -54,7 +54,7 @@ const archivosPage = () => {
         setStudentId(estudiante_id);
 
         const categoriaResponse = await fetch(
-          `http://3.21.41.85/api/v1/categorias/${carrera_id}`
+          `http://3.144.231.126/api/v1/categorias/${carrera_id}`
         );
 
         if (categoriaResponse.ok) {
@@ -63,7 +63,7 @@ const archivosPage = () => {
 
           if (estudiante_id) { // Comprobación si 'estudiante_id' está definido
             const documentosResponse = await fetch(
-              `http://3.21.41.85/api/v1/documento/${estudiante_id}/${categoriaData[0]?.id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
+              `http://3.144.231.126/api/v1/documento/${estudiante_id}/${categoriaData[0]?.id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
             );
 
             if (documentosResponse.ok) {
@@ -106,7 +106,7 @@ const archivosPage = () => {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/documento/${id}/`, {
+    fetch(`http://3.144.231.126/api/v1/documento/${id}/`, {
       method: "DELETE",
     })
       .then((response) => {
@@ -130,7 +130,7 @@ const archivosPage = () => {
   const handleInsert = (e) => {
     e.preventDefault();
 
-    fetch(`http://3.21.41.85/api/v1/documento/${userId}/${categorias[0]?.id}/${studentId}`, {
+    fetch(`http://3.144.231.126/api/v1/documento/${userId}/${categorias[0]?.id}/${studentId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -164,7 +164,7 @@ const archivosPage = () => {
         console.log(selectedFile);
         if (selectedFile) {
           archivoFormData.append("file", selectedFile);
-          return fetch(`http://3.21.41.85/api/v1/archivo/${nuevoDocumentoId}`, {
+          return fetch(`http://3.144.231.126/api/v1/archivo/${nuevoDocumentoId}`, {
             method: "POST",
             body: archivoFormData,
           });
@@ -186,7 +186,7 @@ const archivosPage = () => {
 
 
   const handleDownload = (documentoId) => {
-    fetch(`http://3.21.41.85/api/v1/archivo/${documentoId}`)
+    fetch(`http://3.144.231.126/api/v1/archivo/${documentoId}`)
       .then((response) => {
         if (response.ok) {
           return response.blob();

@@ -40,7 +40,7 @@ const CarrerasPage = () => {
     // Obtener datos de la API
     const fetchCarrersData = async () => {
         try {
-            const carrerResponse = await fetch('http://3.21.41.85/api/v1/carrera');
+            const carrerResponse = await fetch('http://3.144.231.126/api/v1/carrera');
             if (!carrerResponse.ok) {
                 throw new Error('Failed to fetch user data');
             }
@@ -52,7 +52,7 @@ const CarrerasPage = () => {
 
             // Crear promesas para obtener datos de facultades
             const facultyDataFetches = uniqueFacultyIds.map(async (facultad_id) => {
-                const facultyResponse = await fetch(`http://3.21.41.85/api/v1/facultad/${facultad_id}`);
+                const facultyResponse = await fetch(`http://3.144.231.126/api/v1/facultad/${facultad_id}`);
 
                 // Verificar si la respuesta fue exitosa
                 if (!facultyResponse.ok) {
@@ -92,7 +92,7 @@ const CarrerasPage = () => {
     const fetchFaculties = async () => {
         try {
             // 1. Realizar solicitud para obtener datos de facultades
-            const response = await fetch('http://3.21.41.85/api/v1/facultad');
+            const response = await fetch('http://3.144.231.126/api/v1/facultad');
 
             // 2. Verificar si la respuesta fue exitosa
             if (response.ok) {
@@ -172,7 +172,7 @@ const CarrerasPage = () => {
 
     // Eliminar Carrera
     const handleDelete = (id: any) => {
-        fetch(`http://3.21.41.85/api/v1/carrera/${id}`, {
+        fetch(`http://3.144.231.126/api/v1/carrera/${id}`, {
             method: 'DELETE',
         })
             .then((response) => {
@@ -194,7 +194,7 @@ const CarrerasPage = () => {
         e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
         console.log(formData);
         try {
-            const response = await fetch('http://3.21.41.85/api/v1/carrera', {
+            const response = await fetch('http://3.144.231.126/api/v1/carrera', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ const CarrerasPage = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch(`http://3.21.41.85/api/v1/carrera/${id}`, {
+            const response = await fetch(`http://3.144.231.126/api/v1/carrera/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
