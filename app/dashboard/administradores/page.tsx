@@ -53,7 +53,7 @@ const AdministradoresPage = () => {
 
   const fetchUserData = async () => {
     try {
-      const userDataResponse = await fetch('http://3.21.41.85/api/v1/usuario/rol/1');
+      const userDataResponse = await fetch('http://3.144.231.126/api/v1/usuario/rol/1');
       if (!userDataResponse.ok) {
         throw new Error('Failed to fetch user data');
       }
@@ -62,7 +62,7 @@ const AdministradoresPage = () => {
 
       const uniqueRoleIds = [...new Set(userData.map((user) => user.rol_id))];
       const roleDataFetches = uniqueRoleIds.map(async (roleId) => {
-        const roleResponse = await fetch(`http://3.21.41.85/api/v1/rol/${roleId}`);
+        const roleResponse = await fetch(`http://3.144.231.126/api/v1/rol/${roleId}`);
         if (!roleResponse.ok) {
           throw new Error(`Failed to fetch role with ID ${roleId}`);
         }
@@ -93,7 +93,7 @@ const AdministradoresPage = () => {
 
   const fetchCarreras = async () => {
     try {
-      const response = await fetch('http://3.21.41.85/api/v1/carrera');
+      const response = await fetch('http://3.144.231.126/api/v1/carrera');
       if (response.ok) {
         const data = await response.json();
         setCarreras(data);
@@ -116,7 +116,7 @@ const AdministradoresPage = () => {
 
   const fetchFacultades = async () => {
     try {
-      const response = await fetch('http://3.21.41.85/api/v1/facultad');
+      const response = await fetch('http://3.144.231.126/api/v1/facultad');
       if (response.ok) {
         const data = await response.json();
         setFacultades(data);
@@ -145,7 +145,7 @@ const AdministradoresPage = () => {
 
   const fetchCarrerasForFacultad = async (facultadId) => {
     try {
-      const response = await fetch(`http://3.21.41.85/api/v1/carrera/facultad/${facultadId}`);
+      const response = await fetch(`http://3.144.231.126/api/v1/carrera/facultad/${facultadId}`);
       console.log(response);
       if (response.ok) {
         const data = await response.json();
@@ -191,7 +191,7 @@ const AdministradoresPage = () => {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/usuario/${id}`, {
+    fetch(`http://3.144.231.126/api/v1/usuario/${id}`, {
       method: 'DELETE',
     })
       .then((response) => {
@@ -216,7 +216,7 @@ const AdministradoresPage = () => {
     const encryptedPassword = CryptoJS.AES.encrypt(formData.contrasena, clave).toString();
   
     try {
-      const response = await fetch('http://3.21.41.85/api/v1/usuario', {
+      const response = await fetch('http://3.144.231.126/api/v1/usuario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -304,7 +304,7 @@ const AdministradoresPage = () => {
     const encryptedPassword = CryptoJS.AES.encrypt(selectedAdministrador.contrasena, clave).toString();
   
     try {
-      const response = await fetch(`http://3.21.41.85/api/v1/usuario/${adminId}`, {
+      const response = await fetch(`http://3.144.231.126/api/v1/usuario/${adminId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

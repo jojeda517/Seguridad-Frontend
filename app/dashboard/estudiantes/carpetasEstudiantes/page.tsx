@@ -40,7 +40,7 @@ const carpetasPage = () => {
         setUserCarrera(carrera_id);
 
         const estudiantesResponse = await fetch(
-          `http://3.21.41.85/api/v1/categorias/${carrera_id}`
+          `http://3.144.231.126/api/v1/categorias/${carrera_id}`
         );
         if (estudiantesResponse.ok) {
           const estudiantesData = await estudiantesResponse.json();
@@ -50,7 +50,7 @@ const carpetasPage = () => {
         }
 
         const carrerasResponse = await fetch(
-          `http://3.21.41.85/api/v1/carrera/${carrera_id}`
+          `http://3.144.231.126/api/v1/carrera/${carrera_id}`
         );
         if (carrerasResponse.ok) {
           const carrerasData = await carrerasResponse.json();

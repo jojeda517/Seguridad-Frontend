@@ -17,7 +17,7 @@ export const login = async (credenciales) => {
     try {
         console.log(credenciales);
         // Realiza la solicitud POST al endpoint de inicio de sesión
-        const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
+        const response = await fetch('http://3.144.231.126/api/v1/usuario/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export const loginMicrosoft = async (credenciales) => {
         // Realiza la solicitud POST al endpoint de inicio de sesión
         
 
-        const response = await fetch('http://3.21.41.85/api/v1/usuario/login/microsoft', {
+        const response = await fetch('http://3.144.231.126/api/v1/usuario/login/microsoft', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export const login1 = async (credentials) => {
         //const encriptadoclave = CryptoJS.AES.encrypt(claveencriptada, clave).toString();
         //console.log(encriptadoclave);
 
-      const response = await fetch('http://3.21.41.85/api/v1/usuario/login', {
+      const response = await fetch('http://3.144.231.126/api/v1/usuario/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

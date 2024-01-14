@@ -48,7 +48,7 @@ export default function estudiantesPage() {
         setUserCarrera(carrera_id);
   
         const estudiantesResponse = await fetch(
-          `http://3.21.41.85/api/v1/estudiantes/${carrera_id}`
+          `http://3.144.231.126/api/v1/estudiantes/${carrera_id}`
         );
   
         if (estudiantesResponse.ok) {
@@ -132,7 +132,7 @@ export default function estudiantesPage() {
 
   const handleDelete = (id) => {
     fetch(
-      `http://3.21.41.85/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`,
+      `http://3.144.231.126/api/v1/estudiante/${id}/${parseFloat(userCarrera)}`,
       {
         method: "DELETE",
       }
@@ -170,7 +170,7 @@ export default function estudiantesPage() {
       celular: CryptoJS.AES.encrypt(formData.celular, clave).toString(),
     };
   
-    fetch(`http://3.21.41.85/api/v1/estudiante/${userCarrera}`, {
+    fetch(`http://3.144.231.126/api/v1/estudiante/${userCarrera}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -239,7 +239,7 @@ export default function estudiantesPage() {
       celular: CryptoJS.AES.encrypt(selectedEstudiantes.celular, clave).toString(),
     };
   
-    fetch(`http://3.21.41.85/api/v1/estudiante/${id}`, {
+    fetch(`http://3.144.231.126/api/v1/estudiante/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -337,7 +337,7 @@ export default function estudiantesPage() {
   
     try {
       
-      const response = await fetch(`http://3.21.41.85/api/v1/cargar-estudiantes/${userCarrera}`, {
+      const response = await fetch(`http://3.144.231.126/api/v1/cargar-estudiantes/${userCarrera}`, {
         method: "POST",
         body: archivoformData,
       });

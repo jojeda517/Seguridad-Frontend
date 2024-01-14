@@ -44,7 +44,7 @@ const CategoriasPage = () => {
 
     const fetchCarrersData = async () => {
         try {
-            const carrerResponse = await fetch('http://3.21.41.85/api/v1/carrera');
+            const carrerResponse = await fetch('http://3.144.231.126/api/v1/carrera');
             if (!carrerResponse.ok) {
                 throw new Error('Failed to fetch user data');
             }
@@ -56,7 +56,7 @@ const CategoriasPage = () => {
 
             // Crear promesas para obtener datos de facultades
             const facultyDataFetches = uniqueFacultyIds.map(async (facultad_id) => {
-                const facultyResponse = await fetch(`http://3.21.41.85/api/v1/facultad/${facultad_id}`);
+                const facultyResponse = await fetch(`http://3.144.231.126/api/v1/facultad/${facultad_id}`);
 
                 // Verificar si la respuesta fue exitosa
                 if (!facultyResponse.ok) {
@@ -96,7 +96,7 @@ const CategoriasPage = () => {
     const fetchFaculties = async () => {
         try {
             // 1. Realizar solicitud para obtener datos de facultades
-            const response = await fetch('http://3.21.41.85/api/v1/facultad');
+            const response = await fetch('http://3.144.231.126/api/v1/facultad');
 
             // 2. Verificar si la respuesta fue exitosa
             if (response.ok) {
@@ -118,7 +118,7 @@ const CategoriasPage = () => {
 
     const fetchCategories = async (carrera_id: any) => {
         try {
-            const categotyResponse = await fetch(`http://3.21.41.85/api/v1/categorias/${carrera_id}`);
+            const categotyResponse = await fetch(`http://3.144.231.126/api/v1/categorias/${carrera_id}`);
             if (!categotyResponse.ok) {
                 throw new Error('Failed to fetch category data');
             }
@@ -172,7 +172,7 @@ const CategoriasPage = () => {
 
     // Eliminar Categoría
     const handleDelete = (id: any, carrera_id: any) => {
-        fetch(`http://3.21.41.85/api/v1/categoria/${id}/${carrera_id}`, {
+        fetch(`http://3.144.231.126/api/v1/categoria/${id}/${carrera_id}`, {
             method: 'DELETE',
         })
             .then((response) => {
@@ -198,7 +198,7 @@ const CategoriasPage = () => {
         console.log("Carrera ID:", carrera_id, "de tipo:", typeof carrera_id);
 
         try {
-            const response = await fetch(`http://3.21.41.85/api/v1/categoria/${carrera_id}`, {
+            const response = await fetch(`http://3.144.231.126/api/v1/categoria/${carrera_id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const CategoriasPage = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch(`http://3.21.41.85/api/v1/categoria/${id}`, {
+            const response = await fetch(`http://3.144.231.126/api/v1/categoria/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

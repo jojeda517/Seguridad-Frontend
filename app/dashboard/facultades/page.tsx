@@ -27,7 +27,7 @@ const facultadesPage = () => {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    fetch('http://3.21.41.85/api/v1/facultad')
+    fetch('http://3.144.231.126/api/v1/facultad')
       .then((response) => response.json())
       .then((data) => setFacultades(data))
       .catch((error) => console.error('Error fetching data:', error));
@@ -54,7 +54,7 @@ const facultadesPage = () => {
 
 
   const handleDelete = (id) => {
-    fetch(`http://3.21.41.85/api/v1/facultad/${id}`, {
+    fetch(`http://3.144.231.126/api/v1/facultad/${id}`, {
       method: 'DELETE',
     })
       .then((response) => {
@@ -80,7 +80,7 @@ const facultadesPage = () => {
     e.preventDefault();
   
     // Paso 1: Crear la facultad
-    fetch('http://3.21.41.85/api/v1/facultad', {
+    fetch('http://3.144.231.126/api/v1/facultad', {
       method: 'POST',
       body: JSON.stringify(formData),
       headers: {
@@ -100,7 +100,7 @@ const facultadesPage = () => {
         const archivoFormData = new FormData();
         if (selectedFile) {
           archivoFormData.append('file', selectedFile);
-          return fetch(`http://3.21.41.85/api/v1/logo/${nuevaFacultadId}`, {
+          return fetch(`http://3.144.231.126/api/v1/logo/${nuevaFacultadId}`, {
             method: 'POST',
             body: archivoFormData,
           });
@@ -114,7 +114,7 @@ const facultadesPage = () => {
   
         // Paso 3: Actualizar el estado y mostrar el mensaje de éxito
         // Se puede mejorar asegurándote de que tienes la última versión de los datos antes de actualizar el estado
-        fetch('http://3.21.41.85/api/v1/facultad')
+        fetch('http://3.144.231.126/api/v1/facultad')
           .then((response) => response.json())
           .then((data) => setFacultades(data))
           .catch((error) => console.error('Error fetching data:', error));
@@ -161,7 +161,7 @@ const facultadesPage = () => {
   const handleUpdate = (e, id) => {
     e.preventDefault();
   
-    fetch(`http://3.21.41.85/api/v1/facultad/${id}`, {
+    fetch(`http://3.144.231.126/api/v1/facultad/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -252,7 +252,7 @@ const facultadesPage = () => {
                 </td>
                 <td className="px-6 py-4">
                   {/* Mostrar la imagen del logo */}
-                  {facultad.logo && <img src={`http://3.21.41.85/api/v1/logo/${facultad.id}`} alt="Logo de la facultad" className="w-16 h-16 object-cover rounded-full" />}
+                  {facultad.logo && <img src={`http://3.144.231.126/api/v1/logo/${facultad.id}`} alt="Logo de la facultad" className="w-16 h-16 object-cover rounded-full" />}
                 </td>
                 <td className="px-6 py-4">
                   {facultad.sigla}
