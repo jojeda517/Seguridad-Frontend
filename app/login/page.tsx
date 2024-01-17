@@ -44,6 +44,8 @@ const LoginPage = () => {
         localStorage.setItem('userRole', user.rol_id);
         localStorage.setItem('firstName', user.nombre);
         localStorage.setItem('lastName', user.apellido);
+        localStorage.setItem('carrera',user.carrera_id);
+        localStorage.setItem('userId',user.id);
 
         router.push('/dashboard');
       } else {
@@ -99,6 +101,7 @@ const LoginPage = () => {
         localStorage.setItem('userRoleMicrosoft', userIDMicrosoft);
         localStorage.setItem('nombreMicrosoft', jsonDisplayName.nombre);
         localStorage.setItem('apellidoMicrosoft', jsonDisplayName.apellido);
+        
         router.push('/dashboard');
 
       } else {
