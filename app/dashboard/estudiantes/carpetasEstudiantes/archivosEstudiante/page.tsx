@@ -122,7 +122,7 @@ const archivosPage = () => {
           setDocumentos((prevDocumentos) =>
             prevDocumentos.filter((documentos) => documentos.id !== id)
           );
-          mostrarMensajeToast("Estudiante eliminada");
+          mostrarMensajeToast("Documento eliminada");
         } else {
           throw new Error("Failed to delete");
         }

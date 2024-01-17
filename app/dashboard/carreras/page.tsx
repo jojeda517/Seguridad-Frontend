@@ -217,9 +217,10 @@ const CarrerasPage = () => {
 
             // Limpia el formulario después del registro exitoso
             setFormData({
-                id: '',
+                id: '0',
                 nombre: '',
                 sigla: '',
+                facultad_id: ''
             });
 
             // Opción: puedes cerrar el formulario después del registro exitoso
@@ -272,6 +273,13 @@ const CarrerasPage = () => {
 
     const handleFormularioToggle = () => {
         setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
+        // Si es la primera vez que se abre el formulario, establece facultad_id en el valor de la primera facultad
+        if (!selectedCarrera && !showFormulario) {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                facultad_id: facultades.length > 0 ? facultades[0].id : null,
+            }));
+        }
         setSelectedCarrera(''); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
     };
 
