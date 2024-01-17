@@ -18,6 +18,8 @@ const archivosPage = () => {
   const [categorias, setCategorias] = useState([]);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [userCarrera, setUserCarrera] = useState<string | null>(null);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [idCategria, setIdCategoria] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -48,10 +50,14 @@ const archivosPage = () => {
         const carrera_id = localStorage.getItem("carrera");
         const estudiante_id = localStorage.getItem("StudentId");
         const user_id = localStorage.getItem("userId");
+        const categoria_id = localStorage.getItem("categoria");
         // Modificado a 'selectedStudentId'
         setuserId(user_id);
         setUserCarrera(carrera_id);
         setStudentId(estudiante_id);
+        setIdCategoria(categoria_id);
+        console.log(estudiante_id);
+        
 
         const categoriaResponse = await fetch(
           `http://3.144.231.126/api/v1/categorias/${carrera_id}`
@@ -59,11 +65,13 @@ const archivosPage = () => {
 
         if (categoriaResponse.ok) {
           const categoriaData = await categoriaResponse.json();
+          console.log(categoriaData);
+          
           setCategorias(categoriaData);
 
           if (estudiante_id) { // Comprobación si 'estudiante_id' está definido
             const documentosResponse = await fetch(
-              `http://3.144.231.126/api/v1/documento/${estudiante_id}/${categoriaData[0]?.id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
+              `http://3.144.231.126/api/v1/documento/${estudiante_id}/${categoria_id}` // Accediendo al primer elemento de 'categoriaData' para obtener la propiedad 'id'
             );
 
             if (documentosResponse.ok) {
@@ -130,7 +138,7 @@ const archivosPage = () => {
   const handleInsert = (e) => {
     e.preventDefault();
 
-    fetch(`http://3.144.231.126/api/v1/documento/${userId}/${categorias[0]?.id}/${studentId}`, {
+    fetch(`http://3.144.231.126/api/v1/documento/${userId}/${idCategria}/${studentId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +163,7 @@ const archivosPage = () => {
           fecha: '2024-01-05T02:01:59.787Z'
         });
         setShowFormulario(false);
-        mostrarMensajeToast("Estudiante Registrada");
+        mostrarMensajeToast("Documento Registrado");
 
         const nuevoDocumentoId = data.result.id;
         console.log(nuevoDocumentoId);

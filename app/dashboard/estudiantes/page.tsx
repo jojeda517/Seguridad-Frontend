@@ -468,9 +468,6 @@ export default function estudiantesPage() {
       <div className="text-center font-bold my-4 mb-8">
         <h1>Gestor Estudiantes</h1>
       </div>
-      <div className="text-start font-bold my-4 mb-8">
-        <h3>Carrera de {carreras.nombre}</h3>
-      </div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           {/* Resto del contenido de la tabla */}

@@ -89,8 +89,10 @@ const carpetasPage = () => {
     setCurrentPage(pageNumber);
   };
 
-  const handleCarpetas = (estudiante) => {
+  const handleCarpetas = (categorias) => {
     window.location.href = `/dashboard/estudiantes/carpetasEstudiantes/archivosEstudiante`;
+    localStorage.setItem("categoria",categorias.id);
+
   };
 
 
