@@ -195,7 +195,7 @@ const SecretariasPage = () => {
                         prevAdministradores.filter((administrador) => administrador.id !== id)
                     );
                     //mostrarMensajeToast('Administrador Eliminado');
-                    mostrarMensajeToast('Administrador Eliminado');
+                    mostrarMensajeToast('Secretario Eliminado');
                 } else {
                     throw new Error('Failed to delete');
                 }
@@ -319,7 +319,7 @@ const SecretariasPage = () => {
 
             // Cerrar el formulario después de la actualización exitosa
             setShowFormulario(false);
-            mostrarMensajeToast('Administrador Actualizado');
+            mostrarMensajeToast('Secretario Actualizado');
         } catch (error) {
           console.error('Error al actualizar administrador:', error);
           mostrarMensajeToast('Error al actualizar');
