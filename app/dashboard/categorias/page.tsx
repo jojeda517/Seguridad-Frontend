@@ -51,80 +51,66 @@ const CategoriasPage = () => {
                 throw new Error('Failed to fetch user data');
             }
             const carrerData = await carrerResponse.json();
-
+    
             // Obtener la facultad predeterminada (puedes cambiar esto según tu lógica)
             const defaultFaculty = carrerData[0].facultad_id;
-
+    
             // Establecer la facultad predeterminada en el estado
             setFacultadPredeterminada(defaultFaculty);
-
+    
             // Obtener IDs de facultades únicas
             const uniqueFacultyIds = [...new Set(carrerData.map((carrer) => carrer.facultad_id))];
-
+    
             // Crear promesas para obtener datos de facultades
             const facultyDataFetches = uniqueFacultyIds.map(async (facultad_id) => {
                 const facultyResponse = await fetch(`http://3.144.231.126/api/v1/facultad/${facultad_id}`);
-
+    
                 if (!facultyResponse.ok) {
                     throw new Error(`Failed to fetch role with ID ${facultad_id}`);
                 }
-
+    
                 const facultyData = await facultyResponse.json();
                 return { facultad_id, nombre: facultyData.nombre };
             });
-
+    
             Promise.all(facultyDataFetches)
                 .then((facultades) => {
                     const updatedCarreras = carrerData.map((carrer) => {
                         const faculty = facultades.find((faculty) => faculty.id === carrer.facultad_id);
                         return faculty ? { ...carrer, nombre: faculty.nombre } : carrer;
                     });
-
+    
                     setCarreras(updatedCarreras);
-
+    
                     // Obtener carreras filtradas para la facultad predeterminada
                     const filteredCarreras = updatedCarreras.filter(
-                        (carrera) => parseInt(carrera.facultad_id, 10) === defaultFaculty ||
+                        (carrera) =>
+                            parseInt(carrera.facultad_id, 10) === defaultFaculty ||
                             carrera.facultad_id === defaultFaculty.toString()
                     );
-
+    
                     setCarrerasFiltradas(filteredCarreras);
                     setFacultadSeleccionada(defaultFaculty);
-
+    
                     // Renderizar las categorías de la facultad predeterminada
                     fetchCategories(defaultFaculty);
+    
+                    // Puedes establecer la carrera predeterminada como la primera carrera
+                    setCarreraSeleccionada(filteredCarreras[0]);
+    
+                    // Actualizar el estado de las facultades
+                    setFacultades(facultades);
                 })
                 .catch((error) => {
                     console.error('Error fetching role data:', error);
                 });
-
+    
             fetchFaculties();
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
     };
-    const fetchFaculties = async () => {
-        try {
-            // 1. Realizar solicitud para obtener datos de facultades
-            const response = await fetch('http://3.144.231.126/api/v1/facultad');
-
-            // 2. Verificar si la respuesta fue exitosa
-            if (response.ok) {
-                // 3. Convertir la respuesta a formato JSON
-                const data = await response.json();
-
-                // 4. Actualizar el estado o variable con los datos de facultades
-                setFacultades(data);
-
-            } else {
-                // 11. Lanzar un error si la respuesta no es exitosa
-                throw new Error('Error fetching facultades');
-            }
-        } catch (error) {
-            // 12. Manejar errores durante la obtención de datos de facultades
-            console.error('Error fetching facultades:', error);
-        }
-    };
+    
 
     const fetchCategories = async (carrera_id: any) => {
         try {
@@ -140,12 +126,25 @@ const CategoriasPage = () => {
         }
     };
 
+    const fetchFaculties = async () => {
+        try {
+            const facultyResponse = await fetch('http://3.144.231.126/api/v1/facultad');
+            if (!facultyResponse.ok) {
+                throw new Error('Failed to fetch faculty data');
+            }
+            const facultyData = await facultyResponse.json();
+            setFacultades(facultyData);
+        } catch (error) {
+            console.error('Error fetching faculty data:', error);
+        }
+    };
+
     // MANEJADORES DE EVENTOS
 
     // Obtener las carrers filtradas por la facultad seleccionada obteniendose su id
     const handleFacultadChange = (event: any) => {
         const facultadSeleccionadaID: any = parseInt(event.target.value, 10);
-
+    
         const filteredCarreras = carreras.filter(
             (carrera: any) =>
                 parseInt(carrera.facultad_id, 10) === facultadSeleccionadaID ||
@@ -153,68 +152,74 @@ const CategoriasPage = () => {
         );
         setFacultadSeleccionada(facultadSeleccionadaID);
         setCarrerasFiltradas(filteredCarreras);
-
+    
         // Renderizar las categorias de una facultad seleccionada
         fetchCategories(filteredCarreras[0].id);
+    
+        // Actualizar la carrera seleccionada al cambiar de facultad
+        setCarreraSeleccionada(filteredCarreras[0]);
     };
+    
+    
+    
+    
 
     const handleSelectCarreraChange = (event: any) => {
         const carreraSeleccionadaID = parseInt(event.target.value, 10);
-
+    
         // Obtener la carrera seleccionada desde el estado
         const selectedCarrer: any = carreras.find((carrera) => carrera.id === carreraSeleccionadaID);
-
+    
         // Actualizar el estado de la carrera seleccionada con la carrera seleccionada
         fetchCategories(carreraSeleccionadaID);
         setCarreraSeleccionada(selectedCarrer);
-
-        console.log("ID de la Facultad Seleccionada:", facultadSeleccionada);
-        console.log("Carrera Seleccionada:", carreraSeleccionadaID);
-        console.log("Carrera Seleccionada2:", selectedCarrer);
-
+    
         // Actualizar el estado del formulario con la carrera seleccionada
         setFormData((prevFormData) => ({
             ...prevFormData,
             carrera_id: carreraSeleccionadaID,
         }));
-
     };
+    
+    
 
     // Eliminar Categoría
-    const handleDelete = (id: any, carrera_id: any) => {
-        const carreraId = carrerasFiltradas.length > 0 ? carrerasFiltradas[0].id : null;
-        fetch(`http://3.144.231.126/api/v1/categoria/${id}/${carreraId}`, {
-            method: 'DELETE',
+const handleDelete = (id: any, carrera_id: any) => {
+    fetch(`http://3.144.231.126/api/v1/categoria/${id}/${carrera_id}`, {
+        method: 'DELETE',
+    })
+        .then((response) => {
+            if (response.ok) {
+                // Filtrar las categorías excluyendo la categoría eliminada
+                setCategorias((prevCategorias) =>
+                    prevCategorias.filter((categoria) => categoria.id !== id)
+                );
+                mostrarMensajeToast('Categoría Eliminada!');
+            } else {
+                throw new Error('Failed to delete');
+            }
         })
-            .then((response) => {
-                if (response.ok) {
-                    setCategorias((prevCategorias) =>
-                        prevCategorias.filter((categoria) => categoria.id !== id)
-                    );
-                    mostrarMensajeToast('Categoría Eliminada!');
-                } else {
-                    throw new Error('Failed to delete');
-                }
-            })
-            .catch((error) => console.error('Error deleting:', error));
-        mostrarMensajeToast('Error al Eliminar');
-    };
+        .catch((error) => {
+            console.error('Error deleting:', error);
+            mostrarMensajeToast('Error al Eliminar');
+        });
+};
+
 
     // Registrar Categoría
-    const handleSubmit = async (e: any,) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
     
         try {
-            const carreraId = carrerasFiltradas.length > 0 ? carrerasFiltradas[0].id : null;
-            
+            const carreraId = carreraSeleccionada ? carreraSeleccionada.id : carrerasFiltradas[0].id;
+    
             console.log('Carrera ID:', carreraId);
     
             if (!carreraId) {
                 console.error('No hay carreras disponibles para registrar la categoría.');
                 return;
             }
-            console.log('Cuerpo de la solicitud:', JSON.stringify(formData));
-            
+    
             const response = await fetch(`http://3.144.231.126/api/v1/categoria/${carreraId}`, {
                 method: 'POST',
                 headers: {
@@ -246,6 +251,7 @@ const CategoriasPage = () => {
         }
     };
     
+    
 
     // Guardar una Categoria Mediante el Fomulario
     const handleEdit = (categoria: any) => {
@@ -256,40 +262,42 @@ const CategoriasPage = () => {
     // Actualizar Categoría
     const handleUpdate = async (e: any, id: any) => {
         e.preventDefault();
-
+    
         try {
+            // Realizar la solicitud PUT para actualizar la categoría
+            
             const response = await fetch(`http://3.144.231.126/api/v1/categoria/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(categoriaSeleccionada), // Envía los datos del formulario
+                body: JSON.stringify(categoriaSeleccionada), // Envía los datos actualizados del formulario
             });
-
+    
             if (!response.ok) {
-                throw new Error('Failed to update administrator');
+                throw new Error('Failed to update category');
             }
-
+    
             // Realizar alguna acción adicional después de la actualización, si es necesario
-
-            // Por ejemplo, puedes volver a cargar los datos de los administradores:
-            fetchCarrersData();
-
-            // Limpia el formulario después de una actualizacion exitoso
+            // Por ejemplo, puedes volver a cargar los datos de las categorías:
+            fetchCategories(carreraSeleccionada.id);
+    
+            // Limpia el formulario después de una actualización exitosa
             setFormData({
-                id: '',
+                id: '0',
                 nombre: '',
             });
-
+    
             // Cerrar el formulario después de la actualización exitosa
             setShowFormulario(false);
             mostrarMensajeToast('Categoría Actualizada');
         } catch (error) {
-            console.error('Error al actualizar administrador:', error);
+            console.error('Error al actualizar categoría:', error);
             mostrarMensajeToast('Error al actualizar');
             // Manejar el error, mostrar un mensaje de error, etc.
         }
     };
+    
 
     const handleFormularioToggle = () => {
         setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
@@ -480,7 +488,7 @@ const CategoriasPage = () => {
                             >
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
-                                        Categoría para la Carrera: {carreraSeleccionada.nombre}
+                                        Categoría:
                                     </label>
                                     <input
                                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
