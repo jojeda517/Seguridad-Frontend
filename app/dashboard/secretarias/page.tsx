@@ -1,34 +1,32 @@
 "use client";
 import '../styles.css';
+import CryptoJS from 'crypto-js';
 import { Toast } from '@/components/toast';
+import { withAuth } from "@/services/withAuth";
 import React, { useEffect, useState } from 'react';
 import { EditIcon } from "@/app/dashboard/administradores/EditIcon";
 import { DeleteIcon } from "@/app/dashboard/administradores/DeleteIcon";
-import { withAuth } from "@/services/withAuth";
-import CryptoJS from 'crypto-js';
 
 const SecretariasPage = () => {
+
+    const clave = 'unaclavesecreta12345';
+    const [carreras, setCarreras] = useState([]);
+    const [facultades, setFacultades] = useState([]);
     const [administradores, setAdministradores] = useState([]);
     const [showFormulario, setShowFormulario] = useState(false);
-    const [facultades, setFacultades] = useState([]);
-    const [carreras, setCarreras] = useState([]);
+    const [filteredCarreras, setFilteredCarreras] = useState([]);
     const [selectedFacultad, setSelectedFacultad] = useState('');
-    const clave = 'unaclavesecreta12345';
-
-
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const itemsPerPage = 8;
-
-    const totalPages = Math.ceil(administradores.length / itemsPerPage);
-
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = administradores.slice(indexOfFirstItem, indexOfLastItem);
-
     const [selectedAdministrador, setSelectedAdministrador] = useState(null);
 
+    // Paginación
+    const itemsPerPage = 8;
+    const [currentPage, setCurrentPage] = useState(1);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const totalPages = Math.ceil(administradores.length / itemsPerPage);
+    const currentItems = administradores.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Formulario
     const [formData, setFormData] = useState({
         id: '0',
         nombre: '',
@@ -40,7 +38,7 @@ const SecretariasPage = () => {
         carrera_id: '',
     });
 
-    const [filteredCarreras, setFilteredCarreras] = useState([]);
+    // Obtener los datos de los usuarios
     const fetchUserData = async () => {
         try {
             // Cambiar la URL a la ruta correcta (2)
@@ -49,9 +47,16 @@ const SecretariasPage = () => {
                 throw new Error('Failed to fetch user data');
             }
             const userData = await userDataResponse.json();
+
+            console.log("Datos de los usuarios:", userData);
+
+
             setAdministradores(userData);
 
+            // Obtener los roles únicos de los usuarios
             const uniqueRoleIds = [...new Set(userData.map((user) => user.rol_id))];
+
+            // Obtener los nombres de los roles
             const roleDataFetches = uniqueRoleIds.map(async (roleId) => {
                 const roleResponse = await fetch(`http://3.144.231.126/api/v1/rol/${roleId}`);
                 if (!roleResponse.ok) {
@@ -61,6 +66,7 @@ const SecretariasPage = () => {
                 return { roleId, roleName: roleData.nombre };
             });
 
+            // Esperar a que todas las solicitudes de roles se completen
             Promise.all(roleDataFetches)
                 .then((roles) => {
                     const updatedAdministradores = userData.map((user) => {
@@ -69,12 +75,12 @@ const SecretariasPage = () => {
                             ? { ...user, nombre_rol: role.roleName }
                             : user;
                     });
+                    // Actualizar el estado con los datos de los roles
                     setAdministradores(updatedAdministradores);
                 })
                 .catch((error) => {
                     console.error('Error fetching role data:', error);
                 });
-
             fetchFacultades();
             fetchCarreras();
         } catch (error) {
@@ -82,6 +88,7 @@ const SecretariasPage = () => {
         }
     };
 
+    // Obtener las carreras
     const fetchCarreras = async () => {
         try {
             const response = await fetch('http://3.144.231.126/api/v1/carrera');
@@ -105,7 +112,24 @@ const SecretariasPage = () => {
         }
     };
 
+    // Obtener las carreras para una facultad específica
+    const fetchCarrerasForFacultad = async (facultadId: any) => {
+        try {
+            const response = await fetch(`http://3.144.231.126/api/v1/carrera/facultad/${facultadId}`);
+            console.log(response);
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            } else {
+                throw new Error('Error fetching carreras for facultad');
+            }
+        } catch (error) {
+            console.error('Error fetching carreras for facultad:', error);
+            return [];
+        }
+    };
 
+    // Obtener las facultades
     const fetchFacultades = async () => {
         try {
             const response = await fetch('http://3.144.231.126/api/v1/facultad');
@@ -122,9 +146,9 @@ const SecretariasPage = () => {
                     }));
 
                     // Carga las carreras para la primera facultad automáticamente
-                    console.log(firstFacultadId);
+                    console.log("Primera Facultad ID:", firstFacultadId);
                     const carrerasForFirstFacultad = await fetchCarrerasForFacultad(firstFacultadId);
-                    console.log(carrerasForFirstFacultad);
+                    console.log("Carreras para la primera facultad:", carrerasForFirstFacultad);
                     setFilteredCarreras(carrerasForFirstFacultad);
                 }
             } else {
@@ -134,30 +158,14 @@ const SecretariasPage = () => {
             console.error('Error fetching facultades:', error);
         }
     };
-    const fetchCarrerasForFacultad = async (facultadId) => {
-        try {
-            const response = await fetch(`http://3.144.231.126/api/v1/carrera/facultad/${facultadId}`);
-            console.log(response);
-            if (response.ok) {
-                const data = await response.json();
-                return data;
-            } else {
-                throw new Error('Error fetching carreras for facultad');
-            }
-        } catch (error) {
-            console.error('Error fetching carreras for facultad:', error);
-            return [];
-        }
-    };
-
 
     useEffect(() => {
-
         fetchUserData();
     }, []);
-    // Agregar administrador
 
-    const handleInputChange = (e) => {
+    // Ingresar datos del secretario en el formulario
+    const handleInputChange = (e: any) => {
+        console.log("Evento:", e.target);
         const { id, value } = e.target;
 
         if (selectedAdministrador) {
@@ -173,19 +181,16 @@ const SecretariasPage = () => {
         }
     };
 
-
-
-
     const handleFormularioToggle = () => {
         setShowFormulario((prevState) => !prevState); // Cambia el estado para mostrar u ocultar el formulario
         setSelectedAdministrador(null); // Limpia el estado de selectedFacultad al abrir/cerrar el formulario
     };
 
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = (pageNumber: any) => {
         setCurrentPage(pageNumber);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (id: any) => {
         fetch(`http://3.144.231.126/api/v1/usuario/${id}`, {
             method: 'DELETE',
         })
@@ -204,55 +209,54 @@ const SecretariasPage = () => {
         mostrarMensajeToast('Error al Eliminar');
     };
 
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
-      
-        // Encripta la contraseña utilizando AES y una clave secreta (puedes cambiar la clave según tus necesidades)
+        console.log("Formulario:", formData);
+
+        // Encripta la contraseña utilizando AES y una clave secreta
         const encryptedPassword = CryptoJS.AES.encrypt(formData.contrasena, clave).toString();
-      
+
         try {
-          const response = await fetch('http://3.144.231.126/api/v1/usuario', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...formData,
-              contrasena: encryptedPassword,
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to register administrator');
-          }
-          fetchUserData();
-          setFormData({
-            id: '0',
-            nombre: '',
-            apellido: '',
-            correo: '',
-            rol_id: '1',
-            contrasena: '',
-            facultad_id: '',
-            carrera_id: '',
-          });
-      
-          // Cierra el formulario después de la inserción exitosa
-          setShowFormulario(false);
-          // Resto del código
-          mostrarMensajeToast('!!Secretario registrado');
+            const response = await fetch('http://3.144.231.126/api/v1/usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    contrasena: encryptedPassword,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to register administrator');
+            }
+
+            fetchUserData();
+
+            setFormData({
+                id: '0',
+                nombre: '',
+                apellido: '',
+                correo: '',
+                rol_id: '1',
+                contrasena: '',
+                facultad_id: '',
+                carrera_id: '',
+            });
+
+            // Cierra el formulario después de la inserción exitosa
+            setShowFormulario(false);
+            mostrarMensajeToast('¡Secretario Registrado con Éxito!');
         } catch (error) {
-          console.error('Error al registrar administrador:', error);
-          mostrarMensajeToast('Error al registrar');
-          // Manejar el error, mostrar un mensaje de error, etc.
+            mostrarMensajeToast('Error al registrar');
+            console.error('Error al registrar administrador:', error);
         }
-      };
+    };
 
-
-    const handleSelectChange = (event) => {
+    const handleSelectChange = (event: any) => {
         const selectedCarreraId = parseInt(event.target.value, 10);
-        console.log(selectedCarreraId);
+        console.log("Carrera ID Seleccionada:", selectedCarreraId);
 
         // Actualiza el formulario con el valor de carrera_id
         if (selectedAdministrador) {
@@ -268,10 +272,11 @@ const SecretariasPage = () => {
         }
     };
 
-    const handleFacultadChange = (event) => {
+    const handleFacultadChange = (event: any) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
-        setSelectedFacultad(selectedFacultadId); // Actualiza la facultad seleccionada
+        console.log("Facultad ID Seleccionada:", selectedFacultadId);
 
+        setSelectedFacultad(selectedFacultadId); // Actualiza la facultad seleccionada
         setFormData({ ...formData, facultad_id: selectedFacultadId });
 
         const filteredCarreras = carreras.filter(
@@ -282,55 +287,49 @@ const SecretariasPage = () => {
         setFilteredCarreras(filteredCarreras);
     };
 
-
-
-    const handleEdit = (administrador) => {
+    const handleEdit = (administrador: any) => {
         // Descifrar la contraseña antes de mostrarla en el formulario
         const decryptedPassword = CryptoJS.AES.decrypt(administrador.contrasena, clave).toString(CryptoJS.enc.Utf8);
-      
+
         setSelectedAdministrador({
-          ...administrador,
-          contrasena: decryptedPassword,
+            ...administrador,
+            contrasena: decryptedPassword,
         });
         setShowFormulario(true);
         // Resto del código...
-      };
+    };
 
-
-      const handleUpdate = async (e, adminId) => {
+    const handleUpdate = async (e: any, adminId: any) => {
         e.preventDefault();
-      
+
         // Cifrar la contraseña antes de enviarla para la actualización
         const encryptedPassword = CryptoJS.AES.encrypt(selectedAdministrador.contrasena, clave).toString();
-      
+
         try {
-          const response = await fetch(`http://3.144.231.126/api/v1/usuario/${adminId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...selectedAdministrador,
-              contrasena: encryptedPassword,
-            }),
-          });
-      
+            const response = await fetch(`http://3.144.231.126/api/v1/usuario/${adminId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...selectedAdministrador,
+                    contrasena: encryptedPassword,
+                }),
+            });
+
             fetchUserData();
 
             // Cerrar el formulario después de la actualización exitosa
             setShowFormulario(false);
             mostrarMensajeToast('Secretario Actualizado');
         } catch (error) {
-          console.error('Error al actualizar administrador:', error);
-          mostrarMensajeToast('Error al actualizar');
-          // Manejar el error, mostrar un mensaje de error, etc.
+            console.error('Error al actualizar administrador:', error);
+            mostrarMensajeToast('Error al actualizar');
+            // Manejar el error, mostrar un mensaje de error, etc.
         }
-      };
+    };
 
-      
-    
-
-    const handleFacultadUpdateChange = (event) => {
+    const handleFacultadUpdateChange = (event: any) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
         setSelectedAdministrador((prevSelectedAdministrador) => ({
             ...prevSelectedAdministrador,
@@ -342,13 +341,14 @@ const SecretariasPage = () => {
                 parseInt(carrera.facultad_id, 10) === selectedFacultadId ||
                 carrera.facultad_id === selectedFacultadId.toString()
         );
+
         setFilteredCarreras(filteredCarreras);
     };
 
     const [mostrarToast, setMostrarToast] = useState(false);
     const [mensajeToast, setMensajeToast] = useState('');
 
-    const mostrarMensajeToast = (mensaje) => {
+    const mostrarMensajeToast = (mensaje: any) => {
         setMensajeToast(mensaje);
         setMostrarToast(true);
 
@@ -357,7 +357,6 @@ const SecretariasPage = () => {
             setMostrarToast(false);
         }, 5000);
     };
-
 
 
     return (
@@ -392,6 +391,7 @@ const SecretariasPage = () => {
                             </th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {currentItems.map((administrador) => (
                             <tr key={administrador.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -435,8 +435,7 @@ const SecretariasPage = () => {
                 </table>
             </div>
 
-
-
+            {/* Paginador */}
             <nav aria-label="Page navigation example" className="mt-4">
                 <ul className="inline-flex -space-x-px text-sm">
                     {[...Array(totalPages)].map((_, index) => (
@@ -453,6 +452,8 @@ const SecretariasPage = () => {
                     ))}
                 </ul>
             </nav>
+
+            {/* Tooltip */}
             <div className="fixed bottom-8 right-8 z-10">
                 <button
                     data-tooltip-target="tooltip-new"
@@ -481,13 +482,15 @@ const SecretariasPage = () => {
 
             <Toast></Toast>
 
+            {/* Formulario de Registro */}
             {showFormulario && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="flex justify-center items-center h-screen">
                         <form
                             className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md"
-                            onSubmit={handleSubmit} // Asegúrate de tener una función handleSubmit para manejar el envío del formulario
-                        >
+                            // Asegúrate de tener una función handleSubmit para manejar el envío del formulario
+                            onSubmit={handleSubmit}>
+
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="nombre">
                                     Nombre
@@ -502,6 +505,7 @@ const SecretariasPage = () => {
                                     required
                                 />
                             </div>
+
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="apellido">
                                     Apellido
@@ -516,6 +520,7 @@ const SecretariasPage = () => {
                                     required
                                 />
                             </div>
+
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="correo">
                                     Correo
@@ -530,6 +535,7 @@ const SecretariasPage = () => {
                                     required
                                 />
                             </div>
+
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="contrasena">
                                     Contraseña
@@ -544,6 +550,7 @@ const SecretariasPage = () => {
                                     required
                                 />
                             </div>
+
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="facultad">
                                     Facultad
@@ -562,6 +569,7 @@ const SecretariasPage = () => {
                                     ))}
                                 </select>
                             </div>
+
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="carrera">
                                     Carrera
@@ -580,18 +588,17 @@ const SecretariasPage = () => {
                                     ))}
                                 </select>
                             </div>
+
                             <div className="flex items-center justify-between">
                                 <button
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                    onClick={handleFormularioToggle}
-                                >
+                                    onClick={handleFormularioToggle}>
                                     Cerrar
                                 </button>
                                 <button
                                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                    type="submit"
-                                >
-                                    Registrar Administrador
+                                    type="submit">
+                                    Registrar Secretario/a
                                 </button>
                             </div>
                         </form>
@@ -599,6 +606,7 @@ const SecretariasPage = () => {
                 </div>
             )}
 
+            {/* Formulario de Edición */}
             {showFormulario && selectedAdministrador && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="flex justify-center items-center h-screen">
@@ -715,6 +723,7 @@ const SecretariasPage = () => {
                 </div>
             )}
 
+            {/* Mensajes Toast */}
             {mostrarToast && (
 
                 <div
@@ -755,8 +764,6 @@ const SecretariasPage = () => {
                     </button>
                 </div>
             )}
-
-
 
         </>
     );
