@@ -207,47 +207,47 @@ const SecretariasPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-      
+
         // Encripta la contraseña utilizando AES y una clave secreta (puedes cambiar la clave según tus necesidades)
         const encryptedPassword = CryptoJS.AES.encrypt(formData.contrasena, clave).toString();
-      
+
         try {
-          const response = await fetch('http://3.144.231.126/api/v1/usuario', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...formData,
-              contrasena: encryptedPassword,
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to register administrator');
-          }
-          fetchUserData();
-          setFormData({
-            id: '0',
-            nombre: '',
-            apellido: '',
-            correo: '',
-            rol_id: '1',
-            contrasena: '',
-            facultad_id: '',
-            carrera_id: '',
-          });
-      
-          // Cierra el formulario después de la inserción exitosa
-          setShowFormulario(false);
-          // Resto del código
-          mostrarMensajeToast('!!Secretario registrado');
+            const response = await fetch('http://3.144.231.126/api/v1/usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    contrasena: encryptedPassword,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to register administrator');
+            }
+            fetchUserData();
+            setFormData({
+                id: '0',
+                nombre: '',
+                apellido: '',
+                correo: '',
+                rol_id: '2',
+                contrasena: '',
+                facultad_id: '',
+                carrera_id: '',
+            });
+
+            // Cierra el formulario después de la inserción exitosa
+            setShowFormulario(false);
+            // Resto del código
+            mostrarMensajeToast('!!Secretario registrado');
         } catch (error) {
-          console.error('Error al registrar administrador:', error);
-          mostrarMensajeToast('Error al registrar');
-          // Manejar el error, mostrar un mensaje de error, etc.
+            console.error('Error al registrar administrador:', error);
+            mostrarMensajeToast('Error al registrar');
+            // Manejar el error, mostrar un mensaje de error, etc.
         }
-      };
+    };
 
 
     const handleSelectChange = (event) => {
@@ -287,48 +287,48 @@ const SecretariasPage = () => {
     const handleEdit = (administrador) => {
         // Descifrar la contraseña antes de mostrarla en el formulario
         const decryptedPassword = CryptoJS.AES.decrypt(administrador.contrasena, clave).toString(CryptoJS.enc.Utf8);
-      
+
         setSelectedAdministrador({
-          ...administrador,
-          contrasena: decryptedPassword,
+            ...administrador,
+            contrasena: decryptedPassword,
         });
         setShowFormulario(true);
         // Resto del código...
-      };
+    };
 
 
-      const handleUpdate = async (e, adminId) => {
+    const handleUpdate = async (e, adminId) => {
         e.preventDefault();
-      
+
         // Cifrar la contraseña antes de enviarla para la actualización
         const encryptedPassword = CryptoJS.AES.encrypt(selectedAdministrador.contrasena, clave).toString();
-      
+
         try {
-          const response = await fetch(`http://3.144.231.126/api/v1/usuario/${adminId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ...selectedAdministrador,
-              contrasena: encryptedPassword,
-            }),
-          });
-      
+            const response = await fetch(`http://3.144.231.126/api/v1/usuario/${adminId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...selectedAdministrador,
+                    contrasena: encryptedPassword,
+                }),
+            });
+
             fetchUserData();
 
             // Cerrar el formulario después de la actualización exitosa
             setShowFormulario(false);
             mostrarMensajeToast('Secretario Actualizado');
         } catch (error) {
-          console.error('Error al actualizar administrador:', error);
-          mostrarMensajeToast('Error al actualizar');
-          // Manejar el error, mostrar un mensaje de error, etc.
+            console.error('Error al actualizar administrador:', error);
+            mostrarMensajeToast('Error al actualizar');
+            // Manejar el error, mostrar un mensaje de error, etc.
         }
-      };
+    };
 
-      
-    
+
+
 
     const handleFacultadUpdateChange = (event) => {
         const selectedFacultadId = parseInt(event.target.value, 10);
