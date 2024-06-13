@@ -76,7 +76,7 @@ If you wish to contribute to the project, please follow these steps:
 
 ## Contact
 
-For more information or inquiries, you can contact me via email: jojeda5171@uta.edu.ec](mailto:jojeda5171@uta.edu.ec).
+For more information or inquiries, you can contact me via email: [jojeda5171@uta.edu.ec](mailto:jojeda5171@uta.edu.ec).
 
 ---
 
