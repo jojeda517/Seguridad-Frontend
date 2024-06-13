@@ -1,40 +1,87 @@
-# Next.js & NextUI Template
+# File Management System - Technical University of Ambato
 
-This is a template for creating applications using Next.js 13 (app directory) and NextUI (v2).
+This is a web system developed in Next.js for file management at the Technical University of Ambato. The system allows users to log in with their email and password or their institutional account, manage multiple faculties, and facilitate administration by the secretaries of each faculty.
+
+## Features
+
+- **Authentication:** Log in with email and password or institutional account.
+- **Faculty Management:** Allows the entry and management of multiple faculties.
+- **Administration by Secretaries:** Each faculty is managed by its respective secretary.
+- **Intuitive Interface:** User-friendly and easy-to-use interface.
 
 ## Technologies Used
 
-- [Next.js 13](https://nextjs.org/docs/getting-started)
-- [NextUI v2](https://nextui.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+- **Next.js:** React framework for web application development.
+- **React:** JavaScript library for building user interfaces.
+- **Node.js:** JavaScript runtime for server-side development.
+- **MongoDB:** NoSQL database for information storage.
+- **NextAuth:** Authentication library for Next.js.
 
-## How to Use
+## Prerequisites
 
+Before starting, make sure you have the following installed:
 
-### Use the template with create-next-app
+- Node.js (version 14 or higher)
+- MongoDB
 
-To create a new project based on this template using `create-next-app`, run the following command:
+## Installation
 
-```bash
-npx create-next-app -e https://github.com/nextui-org/next-app-template
-```
+Follow these steps to set up and run the project locally:
 
-### Install dependencies
+1. Clone this repository:
+    ```bash
+    git clone https://github.com/your-username/your-repository.git
+    cd your-repository
+    ```
 
-```bash
-npm install
-```
+2. Install project dependencies:
+    ```bash
+    npm install
+    ```
 
-### Run the development server
+3. Configure environment variables:
 
-```bash
-npm run dev
-```
+    Create a `.env.local` file in the root of the project and add the following variables:
+
+    ```env
+    MONGODB_URI=your_mongodb_connection_string
+    NEXTAUTH_URL=http://localhost:3000
+    NEXTAUTH_SECRET=your_nextauth_secret
+    ```
+
+4. Run the application in development mode:
+    ```bash
+    npm run dev
+    ```
+
+5. Open your browser and navigate to `http://localhost:3000`.
+
+## Usage
+
+Once the application is running, you can perform the following actions:
+
+- **Log in:** Use your email and password or institutional account to access the system.
+- **Manage Faculties:** Add, edit, or delete faculties as needed.
+- **Administer Faculties:** Each secretary can manage the files of their respective faculty.
+
+## Contributing
+
+If you wish to contribute to the project, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/new-feature`).
+3. Make your changes and commit them (`git commit -m 'Add new feature'`).
+4. Push your changes to the branch (`git push origin feature/new-feature`).
+5. Open a Pull Request.
 
 ## License
 
-Licensed under the [MIT license](https://github.com/nextui-org/next-app-template/blob/main/LICENSE).
+This project is licensed under the MIT License. See the `LICENSE` file for more information.
+
+## Contact
+
+For more information or inquiries, you can contact me via email: [your-email@domain.com](mailto:your-email@domain.com).
+
+---
+
+Thank you for using the file management system of the Technical University of Ambato!
