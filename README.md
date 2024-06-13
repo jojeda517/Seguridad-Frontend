@@ -1,4 +1,4 @@
-# File Management System - Technical University of Ambato
+# Web application to store and manage files - Technical University of Ambato
 
 This is a web system developed in Next.js for file management at the Technical University of Ambato. The system allows users to log in with their email and password or their institutional account, manage multiple faculties, and facilitate administration by the secretaries of each faculty.
 
@@ -76,8 +76,8 @@ If you wish to contribute to the project, please follow these steps:
 
 ## Contact
 
-For more information or inquiries, you can contact me via email: [your-email@domain.com](mailto:jojeda5171@uta.edu.ec).
+For more information or inquiries, you can contact me via email: jojeda5171@uta.edu.ec](mailto:jojeda5171@uta.edu.ec).
 
 ---
 
-Thank you for using the file management system of the Technical University of Ambato!
+Thank you for using Web application to store and manage files!
