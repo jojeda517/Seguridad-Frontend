@@ -30,7 +30,7 @@ Follow these steps to set up and run the project locally:
 
 1. Clone this repository:
     ```bash
-    git clone [https://github.com/your-username/your-repository.git](https://github.com/jojeda517/Seguridad-Frontend.git)
+    git clone https://github.com/your-username/your-repository.git
     cd your-repository
     ```
 
